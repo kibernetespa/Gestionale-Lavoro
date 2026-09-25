@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionale Mensile Commesse</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --heading-color: #1e293b;
+            --subtext-color: #64748b;
+            --input-bg: #ffffff;
+            --table-header-bg: #f8fafc;
+            --table-row-hover: #f8fafc;
+            --section-bg: #f1f5f9;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --heading-color: #f1f5f9;
+            --subtext-color: #94a3b8;
+            --input-bg: #0f172a;
+            --table-header-bg: #334155;
+            --table-row-hover: #334155;
+            --section-bg: #0f172a;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px 25px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .container {
+            width: 100%;
+            margin: 0;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: var(--heading-color);
+        }
+        .backup-status-badge {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .backup-status-badge.disabled {
+            background-color: var(--table-header-bg);
+            color: var(--subtext-color);
+            border-color: var(--border);
+        }
+        .backup-status-badge .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        .backup-status-badge.disabled .dot {
+            background-color: #94a3b8;
+            animation: none;
+        }
+        #backupTimer {
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #047857;
+        }
+        .backup-status-badge.disabled #backupTimer {
+            color: var(--subtext-color);
+        }
+        .backup-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        .backup-controls select {
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            width: auto;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 18px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 18px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            font-size: 0.88rem;
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--success);
+            border: 1px solid var(--border);
+        }
+        .toast-notification.show {
+            display: flex;
+            animation: fadeInOut 3s forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            width: 100%;
+            border: 1px solid var(--border);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--subtext-color);
+        }
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            width: 100%;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #64748b;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .btn-theme-toggle {
+            background-color: #3b82f6;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .btn-export {
+            background-color: #059669;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .btn-export:hover {
+            background-color: #047857;
+        }
+        .btn-duplicate-reset {
+            background-color: #7c3aed;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .btn-duplicate-reset:hover {
+            background-color: #6d28d9;
+        }
+        .btn-duplicate-full {
+            background-color: #0284c7;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .btn-duplicate-full:hover {
+            background-color: #0369a1;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .multiselect-container {
+            position: relative;
+            display: inline-block;
+        }
+        .select-btn {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            cursor: pointer;
+            min-width: 180px;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .checkboxes-dropdown {
+            display: none;
+            position: absolute;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            width: 100%;
+            min-width: 180px;
+            padding: 8px 0;
+            margin-top: 4px;
+        }
+        .checkboxes-dropdown.show {
+            display: block;
+        }
+        .checkboxes-dropdown label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            color: var(--text-color);
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .checkboxes-dropdown label:hover {
+            background-color: var(--table-row-hover);
+        }
+        .checkboxes-dropdown input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+        .table-card {
+            padding-bottom: 80px !important;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            overflow-y: visible;
+            width: 100%;
+            padding-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 8px;
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+            vertical-align: middle;
+        }
+        th {
+            background-color: var(--table-header-bg);
+            color: var(--subtext-color);
+            font-weight: 600;
+        }
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        th.sortable:hover {
+            background-color: var(--table-row-hover);
+            color: var(--primary);
+        }
+        tr.commessa-row {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        tr.commessa-row:hover {
+            background-color: var(--table-row-hover);
+        }
+        .sort-icon {
+            font-size: 0.75rem;
+            margin-left: 4px;
+            color: #94a3b8;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        /* Stato Da iniziare in rosso */
+        .st-da-iniziare { background: #fee2e2; color: #991b1b; }
+        .st-in-corso { background: #fef08a; color: #854d0e; }
+        .st-in-attesa { background: #e2e8f0; color: #475569; }
+        .st-completata { background: #bbf7d0; color: #166534; }
+        .progress-bar-bg {
+            background: var(--border);
+            border-radius: 4px;
+            height: 8px;
+            width: 70px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        .progress-bar-fill {
+            background: var(--primary);
+            height: 100%;
+        }
+        .latest-note-preview {
+            max-width: 280px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--subtext-color);
+            font-size: 0.82rem;
+        }
+        .latest-note-date {
+            font-weight: bold;
+            color: var(--primary);
+            margin-right: 4px;
+        }
+        .action-cell-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+        .kebab-note-counter {
+            background-color: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .kebab-note-counter:hover {
+            background-color: rgba(37, 99, 235, 0.2);
+        }
+        .kebab-menu {
+            position: relative;
+            display: inline-block;
+        }
+        .kebab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            color: var(--subtext-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .kebab-btn:hover {
+            background-color: var(--table-row-hover);
+            color: var(--text-color);
+            border-color: var(--border);
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 4px;
+            background-color: var(--card-bg);
+            min-width: 180px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2), 0 4px 6px -2px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            padding: 5px 0;
+            z-index: 1000;
+            border: 1px solid var(--border);
+        }
+        .dropdown-menu.drop-up {
+            top: auto;
+            bottom: 100%;
+            margin-top: 0;
+            margin-bottom: 4px;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            width: 100%;
+            padding: 8px 14px;
+            background: none;
+            border: none;
+            text-align: left;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .dropdown-item:hover {
+            background-color: var(--table-row-hover);
+            color: var(--primary);
+        }
+        .dropdown-item.danger {
+            color: var(--danger);
+        }
+        .dropdown-item.danger:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-card {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+        }
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .close-modal-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--subtext-color);
+        }
+        .note-item {
+            background: var(--section-bg);
+            border-left: 3px solid var(--primary);
+            padding: 8px 12px;
+            border-radius: 0 4px 4px 0;
+            font-size: 0.85rem;
+        }
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .note-date-tag {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .btn-delete-note {
+            background: none;
+            border: none;
+            color: var(--subtext-color);
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .btn-delete-note:hover {
+            color: var(--danger);
+        }
+        .note-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text-color);
+        }
+        .row-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .notes-list-container {
+            max-height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 5px;
+        }
+
+        /* Stili specifici per la Stampa */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #editCommessaModal, #editCommessaModal * {
+                visibility: visible;
+            }
+            #editCommessaModal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                background: white !important;
+                color: black !important;
+                backdrop-filter: none !important;
+                display: block !important;
+            }
+            .modal-card {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: none !important;
+                background: white !important;
+                color: black !important;
+            }
+            .close-modal-btn, 
+            .modal-footer, 
+            .btn-delete-note,
+            .add-note-section {
+                display: none !important;
+            }
+            input, select, textarea {
+                border: none !important;
+                background: transparent !important;
+                appearance: none;
+                -webkit-appearance: none;
+                font-weight: bold;
+                padding: 0 !important;
+                color: #000 !important;
+            }
+            .notes-list-container {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            .note-item {
+                border-left: 3px solid #000 !important;
+                background: #f8fafc !important;
+                color: #000 !important;
+                page-break-inside: avoid;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div>
+            <h1>Gestionale Commesse Mensile</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">🌙 Modalità Scura</button>
+            <div id="backupBadge" class="backup-status-badge">
+                <span class="dot"></span> Prossimo backup: <span id="backupTimer">02:00</span>
+            </div>
+            <div class="backup-controls">
+                <span>Auto Backup:</span>
+                <label class="switch" title="Attiva/Disattiva backup automatico">
+                    <input type="checkbox" id="toggleBackup" checked onchange="toggleAutoBackup()">
+                    <span class="slider"></span>
+                </label>
+                <select id="backupIntervalSelect" onchange="changeBackupInterval()" title="Intervallo backup">
+                    <option value="1">1 min</option>
+                    <option value="2" selected>2 min</option>
+                    <option value="5">5 min</option>
+                    <option value="10">10 min</option>
+                    <option value="15">15 min</option>
+                    <option value="30">30 min</option>
+                    <option value="60">60 min</option>
+                </select>
+            </div>
+            <button class="btn-duplicate-reset" onclick="duplicateSelectedResetToNextMonth()">1️⃣ Duplica Selezionate (Reset Note)</button>
+            <button class="btn-duplicate-full" onclick="duplicateNonCompletedToNextMonth()">2️⃣ Duplica In Correnti (Con Note)</button>
+            <button class="btn-export" onclick="exportData()">💾 Backup JSON manuale</button>
+            <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Importa JSON</button>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+        </div>
+    </header>
+
+    <div class="card">
+        <h2 id="formTitle" style="font-size: 1.1rem; margin-bottom: 15px; color: var(--heading-color);">Nuova Commessa</h2>
+        <form id="commessaForm">
+            <input type="hidden" id="commessaId">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="codice">Codice/Nome *</label>
+                    <input type="text" id="codice" required placeholder="Es. COM-2026-01">
+                </div>
+                <div class="form-group">
+                    <label for="cliente">Cliente</label>
+                    <input type="text" id="cliente" placeholder="Es. Azienda Rossi">
+                </div>
+                <div class="form-group">
+                    <label for="dataApertura">Data Apertura *</label>
+                    <input type="date" id="dataApertura" required>
+                </div>
+                <div class="form-group">
+                    <label for="dataChiusura">Data Chiusura</label>
+                    <input type="date" id="dataChiusura">
+                </div>
+                <div class="form-group">
+                    <label for="stato">Stato Avanzamento</label>
+                    <select id="stato">
+                        <option value="Da iniziare">Da iniziare</option>
+                        <option value="In corso">In corso</option>
+                        <option value="In attesa">In attesa</option>
+                        <option value="Completata">Completata</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="percentuale">% Avanzamento</label>
+                    <input type="number" id="percentuale" min="0" max="100" value="0">
+                </div>
+            </div>
+            <div style="background: var(--section-bg); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border);">
+                <label style="color: var(--heading-color); margin-bottom: 8px; display: block;">➕ Aggiungi Nota</label>
+                <div class="form-grid" style="margin-bottom: 0;">
+                    <div class="form-group">
+                        <label for="dataNota">Data Nota</label>
+                        <input type="date" id="dataNota">
+                    </div>
+                    <div class="form-group">
+                        <label for="oraNota">Ora Nota</label>
+                        <input type="time" id="oraNota">
+                    </div>
+                    <div class="form-group full-width" style="grid-column: span 2;">
+                        <label for="nuovaNota">Testo Nota</label>
+                        <textarea id="nuovaNota" placeholder="Scrivi un aggiornamento..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-primary" id="btnSave">Salva Commessa</button>
+                <button type="button" class="btn-secondary" id="btnCancel" onclick="resetForm()" style="display:none;">Annulla</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card table-card">
+        <div class="controls">
+            <div class="filter-group">
+                <label for="filterAnno">Anno:</label>
+                <select id="filterAnno" onchange="renderTable()" style="width: auto;">
+                    <option value="">Tutti</option>
+                </select>
+
+                <label for="filterMese">Mese:</label>
+                <input type="month" id="filterMese" onchange="renderTable()" style="width: auto;">
+                
+                <label>Stato:</label>
+                <div class="multiselect-container">
+                    <div class="select-btn" onclick="toggleDropdown(event)">
+                        <span id="multiselectLabel">Tutti gli Stati</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="checkboxes-dropdown" id="checkboxesDropdown">
+                        <label><input type="checkbox" value="Da iniziare" onchange="onStatoFilterChange()"> Da iniziare</label>
+                        <label><input type="checkbox" value="In corso" onchange="onStatoFilterChange()"> In corso</label>
+                        <label><input type="checkbox" value="In attesa" onchange="onStatoFilterChange()"> In attesa</label>
+                        <label><input type="checkbox" value="Completata" onchange="onStatoFilterChange()"> Completata</label>
+                    </div>
+                </div>
+                <label for="filterCliente">Cliente:</label>
+                <input type="text" id="filterCliente" oninput="renderTable()" placeholder="Cerca cliente..." style="width: 130px;">
+
+                <label for="filterKeyword">Parola chiave:</label>
+                <input type="text" id="filterKeyword" oninput="renderTable()" placeholder="Cerca dappertutto..." style="width: 150px;">
+
+                <button class="btn-secondary" onclick="resetFilter()">Reset</button>
+            </div>
+            <button class="btn-secondary" onclick="exportToCSV()">Esporta CSV</button>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="selectAllCheckbox" class="row-checkbox" onchange="toggleSelectAll(this)" title="Seleziona tutti">
+                        </th>
+                        <th>Codice / Nome</th>
+                        <th>Cliente</th>
+                        <th class="sortable" onclick="sortTable('dataApertura')">
+                            Apertura <span id="sort-icon-dataApertura" class="sort-icon">⇅</span>
+                        </th>
+                        <th>Chiusura</th>
+                        <th class="sortable" onclick="sortTable('stato')">
+                            Stato <span id="sort-icon-stato" class="sort-icon">⇅</span>
+                        </th>
+                        <th>%</th>
+                        <th>Ultima Nota</th>
+                        <th style="text-align: right;">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifica Commessa Completa con Note e Stampa -->
+<div class="modal-overlay" id="editCommessaModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="modalEditTitle">Modifica Commessa</h3>
+            <button class="close-modal-btn" onclick="closeEditModal()">✕</button>
+        </div>
+        <form id="modalEditForm" onsubmit="saveCommessaFromModal(event)">
+            <div class="modal-body">
+                <input type="hidden" id="modalCommessaId">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="modalCodice">Codice/Nome *</label>
+                        <input type="text" id="modalCodice" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalCliente">Cliente</label>
+                        <input type="text" id="modalCliente">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalDataApertura">Data Apertura *</label>
+                        <input type="date" id="modalDataApertura" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalDataChiusura">Data Chiusura</label>
+                        <input type="date" id="modalDataChiusura">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalStato">Stato Avanzamento</label>
+                        <select id="modalStato">
+                            <option value="Da iniziare">Da iniziare</option>
+                            <option value="In corso">In corso</option>
+                            <option value="In attesa">In attesa</option>
+                            <option value="Completata">Completata</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalPercentuale">% Avanzamento</label>
+                        <input type="number" id="modalPercentuale" min="0" max="100">
+                    </div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border); padding-top: 12px;">
+                    <label style="color: var(--heading-color); font-size: 0.95rem; margin-bottom: 8px; display: block;">📝 Cronologia Note</label>
+                    <div id="modalNotesHistory" class="notes-list-container">
+                    </div>
+                </div>
+
+                <div class="add-note-section" style="background: var(--section-bg); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                    <label style="color: var(--heading-color); margin-bottom: 8px; display: block;">➕ Aggiungi Nuova Nota</label>
+                    <div class="form-grid" style="margin-bottom: 0;">
+                        <div class="form-group">
+                            <label for="modalDataNota">Data Nota</label>
+                            <input type="date" id="modalDataNota">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalOraNota">Ora Nota</label>
+                            <input type="time" id="modalOraNota">
+                        </div>
+                        <div class="form-group full-width" style="grid-column: span 2;">
+                            <label for="modalNuovaNota">Testo Nota</label>
+                            <textarea id="modalNuovaNota" placeholder="Scrivi un aggiornamento..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="window.print()" style="background-color: #0284c7;">🖨️ Stampa</button>
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">Annulla</button>
+                <button type="submit" class="btn-primary">Salva Modifiche</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="toast" class="toast-notification">
+    <span>🔄 Backup automatico scaricato con successo</span>
+</div>
+
+<script>
+    // Gestione Tema (Scuro/Chiaro)
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeBtnText(savedTheme);
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeBtnText(newTheme);
+    }
+
+    function updateThemeBtnText(theme) {
+        const btn = document.getElementById('themeToggleBtn');
+        if (btn) {
+            btn.innerText = theme === 'dark' ? '☀️ Modalità Chiara' : '🌙 Modalità Scura';
+        }
+    }
+
+    initTheme();
+
+    let commesse = JSON.parse(localStorage.getItem('commesse_db')) || [];
+    let currentSortColumn = null;
+    let currentSortOrder = 'asc';
+
+    const statoPriority = {
+        "Da iniziare": 1,
+        "In corso": 2,
+        "In attesa": 3,
+        "Completata": 4
+    };
+
+    function sortTable(column) {
+        if (currentSortColumn === column) {
+            currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSortColumn = column;
+            currentSortOrder = 'asc';
+        }
+        renderTable();
+    }
+
+    function saveToLocalStorage() {
+        localStorage.setItem('commesse_db', JSON.stringify(commesse));
+    }
+
+    function formatDate(dStr) {
+        if (!dStr) return '-';
+        const parts = dStr.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return dStr;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function populateAnnoDropdown() {
+        const selectAnno = document.getElementById('filterAnno');
+        const currentValue = selectAnno.value;
+        const anniSet = new Set();
+        
+        commesse.forEach(c => {
+            if (c.dataApertura) {
+                const y = c.dataApertura.split('-')[0];
+                if (y) anniSet.add(y);
+            }
+        });
+
+        const anniSorted = Array.from(anniSet).sort().reverse();
+        selectAnno.innerHTML = '<option value="">Tutti</option>';
+        anniSorted.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            selectAnno.appendChild(opt);
+        });
+        selectAnno.value = currentValue;
+    }
+
+    commesse.forEach(c => {
+        if (!Array.isArray(c.noteCronologia)) {
+            c.noteCronologia = [];
+            if (c.note) {
+                c.noteCronologia.push({
+                    id: Date.now(),
+                    data: c.dataNota || c.dataApertura || new Date().toISOString().slice(0, 10),
+                    ora: '12:00',
+                    testo: c.note
+                });
+                delete c.note;
+                delete c.dataNota;
+            }
+        }
+    });
+
+    const now = new Date();
+    const todayISO = now.toISOString().slice(0, 10);
+    const timeNow = now.toTimeString().slice(0, 5);
+    const currentMonth = todayISO.slice(0, 7);
+
+    document.getElementById('filterMese').value = currentMonth;
+    document.getElementById('dataApertura').value = todayISO;
+    document.getElementById('dataNota').value = todayISO;
+    document.getElementById('oraNota').value = timeNow;
+
+    populateAnnoDropdown();
+
+    const form = document.getElementById('commessaForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('commessaId').value;
+        const testoNota = document.getElementById('nuovaNota').value.trim();
+        const dataNota = document.getElementById('dataNota').value;
+        const oraNota = document.getElementById('oraNota').value;
+        let currentNotes = [];
+
+        if (id) {
+            const existing = commesse.find(c => c.id === parseInt(id));
+            if (existing) currentNotes = existing.noteCronologia || [];
+        }
+
+        if (testoNota !== '') {
+            currentNotes.push({
+                id: Date.now(),
+                data: dataNota || todayISO,
+                ora: oraNota || new Date().toTimeString().slice(0, 5),
+                testo: testoNota
+            });
+        }
+
+        const commessaData = {
+            id: id ? parseInt(id) : Date.now(),
+            codice: document.getElementById('codice').value,
+            cliente: document.getElementById('cliente').value,
+            dataApertura: document.getElementById('dataApertura').value,
+            dataChiusura: document.getElementById('dataChiusura').value,
+            stato: document.getElementById('stato').value,
+            percentuale: parseInt(document.getElementById('percentuale').value) || 0,
+            noteCronologia: currentNotes
+        };
+
+        if (id) {
+            const index = commesse.findIndex(c => c.id === parseInt(id));
+            commesse[index] = commessaData;
+        } else {
+            commesse.push(commessaData);
+        }
+
+        saveToLocalStorage();
+        populateAnnoDropdown();
+        resetForm();
+        renderTable();
+    });
+
+    function resetForm() {
+        form.reset();
+        document.getElementById('commessaId').value = '';
+        document.getElementById('formTitle').innerText = 'Nuova Commessa';
+        document.getElementById('btnSave').innerText = 'Salva Commessa';
+        document.getElementById('btnCancel').style.display = 'none';
+        document.getElementById('dataApertura').value = todayISO;
+        document.getElementById('dataNota').value = todayISO;
+        document.getElementById('oraNota').value = timeNow;
+    }
+
+    function toggleDropdown(e) {
+        e.stopPropagation();
+        document.getElementById('checkboxesDropdown').classList.toggle('show');
+    }
+
+    function toggleKebabMenu(e, id, isLastRows) {
+        e.stopPropagation();
+        document.querySelectorAll('.dropdown-menu').forEach(m => {
+            if (m.id !== `kebab-dropdown-${id}`) m.classList.remove('show');
+        });
+        const targetMenu = document.getElementById(`kebab-dropdown-${id}`);
+        if (targetMenu) {
+            if (isLastRows) {
+                targetMenu.classList.add('drop-up');
+            } else {
+                targetMenu.classList.remove('drop-up');
+            }
+            targetMenu.classList.toggle('show');
+        }
+    }
+
+    window.onclick = function(e) {
+        if (!e.target.closest('.multiselect-container')) {
+            const dropdown = document.getElementById('checkboxesDropdown');
+            if (dropdown) dropdown.classList.remove('show');
+        }
+        if (!e.target.closest('.kebab-menu')) {
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        }
+    };
+
+    function getSelectedStati() {
+        const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]:checked');
+        return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    function onStatoFilterChange() {
+        const selected = getSelectedStati();
+        const label = document.getElementById('multiselectLabel');
+        if (selected.length === 0) label.innerText = 'Tutti gli Stati';
+        else if (selected.length === 1) label.innerText = selected[0];
+        else label.innerText = `${selected.length} stati selezionati`;
+        renderTable();
+    }
+
+    function getSortedNotes(noteArray) {
+        if (!noteArray || noteArray.length === 0) return [];
+        return [...noteArray].sort((a, b) => {
+            const dtA = (a.data || '') + ' ' + (a.ora || '');
+            const dtB = (b.data || '') + ' ' + (b.ora || '');
+            return dtB.localeCompare(dtA);
+        });
+    }
+
+    function toggleSelectAll(masterCheckbox) {
+        const checkboxes = document.querySelectorAll('.commessa-checkbox');
+        checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+    }
+
+    function getNextMonthInfo() {
+        const selectedMonth = document.getElementById('filterMese').value || new Date().toISOString().slice(0, 7);
+        const [yearStr, monthStr] = selectedMonth.split('-');
+        let year = parseInt(yearStr);
+        let month = parseInt(monthStr);
+        month++;
+        if (month > 12) {
+            month = 1;
+            year++;
+        }
+        const nextMonthISO = `${year}-${String(month).padStart(2, '0')}`;
+        const nextMonthDataApertura = `${nextMonthISO}-01`;
+        return { nextMonthISO, nextMonthDataApertura };
+    }
+
+    function duplicateSelectedResetToNextMonth() {
+        const selectedCheckboxes = document.querySelectorAll('.commessa-checkbox:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('Seleziona almeno una commessa tramite le caselle di spunta (flag).');
+            return;
+        }
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+        const commesseToDuplicate = commesse.filter(c => selectedIds.includes(c.id));
+        const { nextMonthISO, nextMonthDataApertura } = getNextMonthInfo();
+        if (!confirm(`Vuoi duplicare le ${commesseToDuplicate.length} commesse selezionate nel mese di ${nextMonthISO}?\n\n- Stato: Da iniziare\n- % Avanzamento: 0%\n- Note: Nessuna nota (Reset)`)) {
+            return;
+        }
+        let timestampCounter = Date.now();
+        commesseToDuplicate.forEach(c => {
+            timestampCounter++;
+            const duplicatedCommesa = {
+                id: timestampCounter,
+                codice: c.codice,
+                cliente: c.cliente,
+                dataApertura: nextMonthDataApertura,
+                dataChiusura: '',
+                stato: 'Da iniziare',
+                percentuale: 0,
+                noteCronologia: []
+            };
+            commesse.push(duplicatedCommesa);
+        });
+        saveToLocalStorage();
+        populateAnnoDropdown();
+        document.getElementById('filterMese').value = nextMonthISO;
+        renderTable();
+        alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
+    }
+
+    function duplicateNonCompletedToNextMonth() {
+        const selectedMonth = document.getElementById('filterMese').value || new Date().toISOString().slice(0, 7);
+        const activeCommesse = commesse.filter(c => {
+            const matchesMonth = c.dataApertura && c.dataApertura.startsWith(selectedMonth);
+            const matchesNotCompleted = c.stato !== 'Completata';
+            return matchesMonth && matchesNotCompleted;
+        });
+        if (activeCommesse.length === 0) {
+            alert('Nessuna commessa non completata presente nel mese selezionato.');
+            return;
+        }
+        const { nextMonthISO, nextMonthDataApertura } = getNextMonthInfo();
+        if (!confirm(`Trovate ${activeCommesse.length} commesse non completate in ${selectedMonth}.\nVuoi duplicarle integralmente nel mese ${nextMonthISO} mantenendo note e stato corrente?`)) {
+            return;
+        }
+        let timestampCounter = Date.now();
+        activeCommesse.forEach(c => {
+            timestampCounter++;
+            const duplicatedCommesa = {
+                ...JSON.parse(JSON.stringify(c)),
+                id: timestampCounter,
+                dataApertura: nextMonthDataApertura
+            };
+            commesse.push(duplicatedCommesa);
+        });
+        saveToLocalStorage();
+        populateAnnoDropdown();
+        document.getElementById('filterMese').value = nextMonthISO;
+        renderTable();
+        alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
+    }
+
+    function openEditModal(id) {
+        const c = commesse.find(item => item.id === id);
+        if (!c) return;
+
+        document.getElementById('modalCommessaId').value = c.id;
+        document.getElementById('modalCodice').value = c.codice;
+        document.getElementById('modalCliente').value = c.cliente || '';
+        document.getElementById('modalDataApertura').value = c.dataApertura || '';
+        document.getElementById('modalDataChiusura').value = c.dataChiusura || '';
+        document.getElementById('modalStato').value = c.stato;
+        document.getElementById('modalPercentuale').value = c.percentuale;
+
+        document.getElementById('modalEditTitle').innerText = `Gestione Commessa: ${c.codice}`;
+
+        document.getElementById('modalDataNota').value = todayISO;
+        document.getElementById('modalOraNota').value = timeNow;
+        document.getElementById('modalNuovaNota').value = '';
+
+        renderModalNotesHistory(c);
+
+        document.getElementById('editCommessaModal').classList.add('active');
+    }
+
+    function printCommessaDirect(id) {
+        openEditModal(id);
+        setTimeout(() => {
+            window.print();
+        }, 150);
+    }
+
+    function renderModalNotesHistory(commessa) {
+        const container = document.getElementById('modalNotesHistory');
+        container.innerHTML = '';
+        const sortedNotes = getSortedNotes(commessa.noteCronologia);
+
+        if (sortedNotes.length === 0) {
+            container.innerHTML = '<p style="color: var(--subtext-color); font-size: 0.85rem;">Nessuna nota presente per questa commessa.</p>';
+        } else {
+            sortedNotes.forEach(n => {
+                const item = document.createElement('div');
+                item.className = 'note-item';
+                item.innerHTML = `
+                    <div class="note-header">
+                        <span class="note-date-tag">📅 ${formatDate(n.data)} - 🕒 ${n.ora || '12:00'}</span>
+                        <button type="button" class="btn-delete-note" onclick="deleteNoteFromModal(${commessa.id}, ${n.id})">Elimina</button>
+                    </div>
+                    <div class="note-text">${escapeHtml(n.testo)}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+    }
+
+    function closeEditModal() {
+        document.getElementById('editCommessaModal').classList.remove('active');
+    }
+
+    function deleteNoteFromModal(commessaId, noteId) {
+        if (!confirm('Eliminare questa nota?')) return;
+        const c = commesse.find(item => item.id === commessaId);
+        if (!c) return;
+        c.noteCronologia = c.noteCronologia.filter(n => n.id !== noteId);
+        saveToLocalStorage();
+        renderModalNotesHistory(c);
+        renderTable();
+    }
+
+    function saveCommessaFromModal(e) {
+        e.preventDefault();
+        const id = parseInt(document.getElementById('modalCommessaId').value);
+        const c = commesse.find(item => item.id === id);
+        if (!c) return;
+
+        c.codice = document.getElementById('modalCodice').value;
+        c.cliente = document.getElementById('modalCliente').value;
+        c.dataApertura = document.getElementById('modalDataApertura').value;
+        c.dataChiusura = document.getElementById('modalDataChiusura').value;
+        c.stato = document.getElementById('modalStato').value;
+        c.percentuale = parseInt(document.getElementById('modalPercentuale').value) || 0;
+
+        const testoNota = document.getElementById('modalNuovaNota').value.trim();
+        const dataNota = document.getElementById('modalDataNota').value;
+        const oraNota = document.getElementById('modalOraNota').value;
+
+        if (testoNota !== '') {
+            if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
+            c.noteCronologia.push({
+                id: Date.now(),
+                data: dataNota || todayISO,
+                ora: oraNota || new Date().toTimeString().slice(0, 5),
+                testo: testoNota
+            });
+        }
+
+        saveToLocalStorage();
+        populateAnnoDropdown();
+        closeEditModal();
+        renderTable();
+    }
+
+    function editCommessa(id) {
+        openEditModal(id);
+    }
+
+    function deleteCommessa(id) {
+        if (confirm('Sei sicuro di voler eliminare questa commessa?')) {
+            commesse = commesse.filter(c => c.id !== id);
+            saveToLocalStorage();
+            populateAnnoDropdown();
+            renderTable();
+        }
+    }
+
+    function resetFilter() {
+        document.getElementById('filterAnno').value = '';
+        document.getElementById('filterMese').value = currentMonth;
+        document.getElementById('filterCliente').value = '';
+        document.getElementById('filterKeyword').value = '';
+        currentSortColumn = null;
+        currentSortOrder = 'asc';
+        const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        onStatoFilterChange();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        const selAnno = document.getElementById('filterAnno').value;
+        const selMonth = document.getElementById('filterMese').value;
+        const selStati = getSelectedStati();
+        const selCliente = document.getElementById('filterCliente').value.toLowerCase().trim();
+        const selKeyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
+
+        let filtered = commesse.filter(c => {
+            const matchesAnno = !selAnno || (c.dataApertura && c.dataApertura.startsWith(selAnno));
+            const matchesMonth = !selMonth || (c.dataApertura && c.dataApertura.startsWith(selMonth));
+            const matchesStato = selStati.length === 0 || selStati.includes(c.stato);
+            const matchesCliente = !selCliente || (c.cliente && c.cliente.toLowerCase().includes(selCliente));
+
+            let matchesKeyword = true;
+            if (selKeyword) {
+                const noteText = (c.noteCronologia || []).map(n => n.testo).join(' ').toLowerCase();
+                const allText = [
+                    c.codice || '',
+                    c.cliente || '',
+                    c.stato || '',
+                    c.dataApertura || '',
+                    c.dataChiusura || '',
+                    noteText
+                ].join(' ').toLowerCase();
+                matchesKeyword = allText.includes(selKeyword);
+            }
+
+            return matchesAnno && matchesMonth && matchesStato && matchesCliente && matchesKeyword;
+        });
+
+        const iconApertura = document.getElementById('sort-icon-dataApertura');
+        const iconStato = document.getElementById('sort-icon-stato');
+        if (iconApertura) iconApertura.innerText = currentSortColumn === 'dataApertura' ? (currentSortOrder === 'asc' ? '▲' : '▼') : '⇅';
+        if (iconStato) iconStato.innerText = currentSortColumn === 'stato' ? (currentSortOrder === 'asc' ? '▲' : '▼') : '⇅';
+
+        if (currentSortColumn) {
+            filtered.sort((a, b) => {
+                let valA, valB;
+                if (currentSortColumn === 'dataApertura') {
+                    valA = a.dataApertura || '';
+                    valB = b.dataApertura || '';
+                } else if (currentSortColumn === 'stato') {
+                    valA = statoPriority[a.stato] || 99;
+                    valB = statoPriority[b.stato] || 99;
+                }
+
+                if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSortOrder === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        const totalFiltered = filtered.length;
+        filtered.forEach((c, index) => {
+            const isLastRows = (totalFiltered > 3) && (index >= totalFiltered - 2);
+            const tr = document.createElement('tr');
+            tr.className = 'commessa-row';
+            tr.ondblclick = function() {
+                openEditModal(c.id);
+            };
+
+            let badgeClass = 'st-da-iniziare';
+            if (c.stato === 'In corso') badgeClass = 'st-in-corso';
+            if (c.stato === 'In attesa') badgeClass = 'st-in-attesa';
+            if (c.stato === 'Completata') badgeClass = 'st-completata';
+
+            const sortedNotes = getSortedNotes(c.noteCronologia);
+            let latestNoteHTML = '<span style="color: #cbd5e1;">-</span>';
+            if (sortedNotes.length > 0) {
+                const topNote = sortedNotes[0];
+                latestNoteHTML = `
+                    <div class="latest-note-preview" title="${escapeHtml(topNote.testo)}">
+                        <span class="latest-note-date">${formatDate(topNote.data)}:</span>${escapeHtml(topNote.testo)}
+                    </div>
+                `;
+            }
+            const notesCount = sortedNotes.length;
+
+            tr.innerHTML = `
+                <td style="text-align: center;" onclick="event.stopPropagation()">
+                    <input type="checkbox" class="row-checkbox commessa-checkbox" value="${c.id}">
+                </td>
+                <td><strong>${escapeHtml(c.codice)}</strong></td>
+                <td>${escapeHtml(c.cliente || '-')}</td>
+                <td>${formatDate(c.dataApertura)}</td>
+                <td>${formatDate(c.dataChiusura)}</td>
+                <td><span class="badge ${badgeClass}">${escapeHtml(c.stato)}</span></td>
+                <td>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${c.percentuale}%;"></div>
+                    </div>
+                    <span style="font-size: 0.8rem; font-weight: 600;">${c.percentuale}%</span>
+                </td>
+                <td>${latestNoteHTML}</td>
+                <td style="text-align: right;" onclick="event.stopPropagation()">
+                    <div class="action-cell-container">
+                        ${notesCount > 0 ? `
+                            <span class="kebab-note-counter" onclick="openEditModal(${c.id})" title="Mostra ${notesCount} note">
+                                💬 ${notesCount}
+                            </span>
+                        ` : ''}
+                        <div class="kebab-menu">
+                            <button class="kebab-btn" onclick="toggleKebabMenu(event, ${c.id}, ${isLastRows})" title="Opzioni">
+                                &#8226;&#8226;&#8226;
+                            </button>
+                            <div class="dropdown-menu" id="kebab-dropdown-${c.id}">
+                                <button class="dropdown-item" onclick="openEditModal(${c.id})">✏️ Apri / Modifica</button>
+                                <button class="dropdown-item" onclick="printCommessaDirect(${c.id})">🖨️ Stampa Scheda</button>
+                                <button class="dropdown-item danger" onclick="deleteCommessa(${c.id})">🗑️ Elimina</button>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        const masterCb = document.getElementById('selectAllCheckbox');
+        if (masterCb) masterCb.checked = false;
+    }
+
+    function exportData(isAuto = false) {
+        saveToLocalStorage();
+        const timestamp = new Date().toISOString().slice(0,19).replace(/[:T]/g, "_");
+        const prefix = isAuto ? "autobackup" : "backup";
+        const filename = `${prefix}_commesse_${timestamp}.json`;
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(commesse, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", filename);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        if (isAuto) {
+            showToast();
+        }
+    }
+
+    function showToast() {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('show');
+        void toast.offsetWidth;
+        toast.classList.add('show');
+    }
+
+    function importData(event) {
+        const fileReader = new FileReader();
+        fileReader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    commesse = imported;
+                    saveToLocalStorage();
+                    populateAnnoDropdown();
+                    renderTable();
+                    alert('Dati importati con successo!');
+                } else {
+                    alert('Formato JSON non valido.');
+                }
+            } catch (err) {
+                alert('Errore nel caricamento del file JSON.');
+            }
+        };
+        if(event.target.files[0]) {
+            fileReader.readAsText(event.target.files[0]);
+        }
+    }
+
+    function exportToCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Codice;Cliente;Data Apertura;Data Chiusura;Stato;Avanzamento %;Ultima Nota\n";
+        commesse.forEach(c => {
+            const sortedNotes = getSortedNotes(c.noteCronologia);
+            const topNote = sortedNotes.length > 0 ? sortedNotes[0].testo.replace(/;/g, ' ').replace(/\n/g, ' ') : '';
+            const row = [
+                `"${c.codice || ''}"`,
+                `"${c.cliente || ''}"`,
+                `"${c.dataApertura || ''}"`,
+                `"${c.dataChiusura || ''}"`,
+                `"${c.stato || ''}"`,
+                `"${c.percentuale || 0}"`,
+                `"${topNote}"`
+            ];
+            csvContent += row.join(";") + "\n";
+        });
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `commesse_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    let backupEnabled = true;
+    let backupIntervalMinutes = 2;
+    let secondsLeft = backupIntervalMinutes * 60;
+
+    function updateTimerDisplay() {
+        const timerElem = document.getElementById('backupTimer');
+        const badgeElem = document.getElementById('backupBadge');
+        if (!backupEnabled) {
+            if (timerElem) timerElem.innerText = "Disattivato";
+            if (badgeElem) badgeElem.classList.add('disabled');
+            return;
+        }
+        if (badgeElem) badgeElem.classList.remove('disabled');
+        const m = Math.floor(secondsLeft / 60);
+        const s = secondsLeft % 60;
+        const formattedTime = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        if (timerElem) {
+            timerElem.innerText = formattedTime;
+        }
+    }
+
+    function toggleAutoBackup() {
+        const checkbox = document.getElementById('toggleBackup');
+        backupEnabled = checkbox.checked;
+        if (backupEnabled) {
+            secondsLeft = backupIntervalMinutes * 60;
+        }
+        updateTimerDisplay();
+    }
+
+    function changeBackupInterval() {
+        const select = document.getElementById('backupIntervalSelect');
+        backupIntervalMinutes = parseInt(select.value) || 2;
+        secondsLeft = backupIntervalMinutes * 60;
+        updateTimerDisplay();
+    }
+
+    setInterval(() => {
+        if (!backupEnabled) return;
+        secondsLeft--;
+        if (secondsLeft <= 0) {
+            exportData(true);
+            secondsLeft = backupIntervalMinutes * 60;
+        }
+        updateTimerDisplay();
+    }, 1000);
+
+    updateTimerDisplay();
+    renderTable();
+</script>
+</body>
+</html>
