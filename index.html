@@ -1064,8 +1064,10 @@
     initTheme();
 
     let commesse = JSON.parse(localStorage.getItem('commesse_db')) || [];
-    let currentSortColumn = null;
-    let currentSortOrder = 'asc';
+    
+    // Ordinamento predefinito: Data Apertura Decrescente (dalla più recente alla più vecchia)
+    let currentSortColumn = 'dataApertura';
+    let currentSortOrder = 'desc';
 
     const statoPriority = {
         "Da iniziare": 1,
@@ -1479,8 +1481,11 @@
         document.getElementById('filterMese').value = currentMonth;
         document.getElementById('filterCliente').value = '';
         document.getElementById('filterKeyword').value = '';
-        currentSortColumn = null;
-        currentSortOrder = 'asc';
+        
+        // Reset dell'ordinamento a Data Apertura decrescente
+        currentSortColumn = 'dataApertura';
+        currentSortOrder = 'desc';
+
         const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]');
         checkboxes.forEach(cb => cb.checked = false);
         onStatoFilterChange();
