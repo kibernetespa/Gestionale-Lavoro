@@ -200,7 +200,7 @@
             border: 1px solid var(--border);
         }
 
-        /* Dashboard Statistiche */
+        /* Dashboard Statistiche Interattive e Cliccabili */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -218,6 +218,17 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             border-left: 4px solid var(--border);
             position: relative;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+        }
+        .stat-card.active {
+            background-color: var(--section-bg);
+            box-shadow: inset 0 0 0 2px var(--primary);
         }
         .stat-card.st-da-iniziare-border { border-left-color: #ef4444; }
         .stat-card.st-in-corso-border { border-left-color: #eab308; }
@@ -789,40 +800,40 @@
         </div>
     </header>
 
-    <!-- Dashboard Statistiche Con Iconcine Colorate -->
+    <!-- Dashboard Statistiche Cliccabili per Filtrare -->
     <div class="stats-grid">
-        <div class="stat-card st-da-iniziare-border">
+        <div class="stat-card st-da-iniziare-border" id="cardDaIniziare" onclick="filterByStatStato('Da iniziare')" title="Filtra per 'Da iniziare'">
             <div class="stat-header">
                 <span class="stat-label">Da Iniziare</span>
-                <span class="stat-icon icon-da-iniziare" title="Da iniziare">🔴</span>
+                <span class="stat-icon icon-da-iniziare">🔴</span>
             </div>
             <span class="stat-value" id="statDaIniziare">0</span>
         </div>
-        <div class="stat-card st-in-corso-border">
+        <div class="stat-card st-in-corso-border" id="cardInCorso" onclick="filterByStatStato('In corso')" title="Filtra per 'In corso'">
             <div class="stat-header">
                 <span class="stat-label">In Corso</span>
-                <span class="stat-icon icon-in-corso" title="In corso">🟡</span>
+                <span class="stat-icon icon-in-corso">🟡</span>
             </div>
             <span class="stat-value" id="statInCorso">0</span>
         </div>
-        <div class="stat-card st-in-attesa-border">
+        <div class="stat-card st-in-attesa-border" id="cardInAttesa" onclick="filterByStatStato('In attesa')" title="Filtra per 'In attesa'">
             <div class="stat-header">
                 <span class="stat-label">In Attesa</span>
-                <span class="stat-icon icon-in-attesa" title="In attesa">⚪</span>
+                <span class="stat-icon icon-in-attesa">⚪</span>
             </div>
             <span class="stat-value" id="statInAttesa">0</span>
         </div>
-        <div class="stat-card st-completata-border">
+        <div class="stat-card st-completata-border" id="cardCompletata" onclick="filterByStatStato('Completata')" title="Filtra per 'Completata'">
             <div class="stat-header">
                 <span class="stat-label">Completate</span>
-                <span class="stat-icon icon-completata" title="Completata">🟢</span>
+                <span class="stat-icon icon-completata">🟢</span>
             </div>
             <span class="stat-value" id="statCompletate">0</span>
         </div>
-        <div class="stat-card st-totale-border">
+        <div class="stat-card st-totale-border" id="cardTotali" onclick="filterByStatStato('ALL')" title="Mostra tutte le commesse">
             <div class="stat-header">
                 <span class="stat-label">Totali</span>
-                <span class="stat-icon icon-totale" title="Totali">📊</span>
+                <span class="stat-icon icon-totale">📊</span>
             </div>
             <span class="stat-value" id="statTotali">0</span>
         </div>
@@ -892,7 +903,7 @@
     </div>
 </div>
 
-<!-- Modal Modifica / Nuova Commessa Completa con Note e Stampa -->
+<!-- Modal Modifica / Nuova Commessa Completa -->
 <div class="modal-overlay" id="editCommessaModal">
     <div class="modal-card">
         <div class="modal-header">
@@ -973,7 +984,6 @@
 </div>
 
 <script>
-    // Funzione per ottenere Data (YYYY-MM-DD) e Ora (HH:MM) attuali
     function getCurrentDateTime() {
         const now = new Date();
         const currentDate = now.toISOString().slice(0, 10);
@@ -981,18 +991,14 @@
         return { currentDate, currentTime };
     }
 
-    // Funzione per aggiornare automaticamente Data e Ora all'inserimento nota
     function autoUpdateNoteDateTime(dataInputId, oraInputId) {
         const { currentDate, currentTime } = getCurrentDateTime();
-        
         const dataElem = document.getElementById(dataInputId);
         const oraElem = document.getElementById(oraInputId);
-        
         if (dataElem && !dataElem.value) dataElem.value = currentDate;
         if (oraElem && !oraElem.value) oraElem.value = currentTime;
     }
 
-    // Gestione Tema (Scuro/Chiaro)
     function initTheme() {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1018,7 +1024,6 @@
 
     let commesse = JSON.parse(localStorage.getItem('commesse_db')) || [];
     
-    // Ordinamento predefinito: Data Apertura Decrescente (dalla più recente alla più vecchia)
     let currentSortColumn = 'dataApertura';
     let currentSortOrder = 'desc';
 
@@ -1148,7 +1153,39 @@
         if (selected.length === 0) label.innerText = 'Tutti gli Stati';
         else if (selected.length === 1) label.innerText = selected[0];
         else label.innerText = `${selected.length} stati selezionati`;
+        
+        updateActiveStatCard(selected);
         renderTable();
+    }
+
+    // Funzione per filtrare cliccando sulle schede delle statistiche
+    function filterByStatStato(targetStato) {
+        const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]');
+        
+        checkboxes.forEach(cb => {
+            if (targetStato === 'ALL') {
+                cb.checked = false;
+            } else {
+                cb.checked = (cb.value === targetStato);
+            }
+        });
+
+        onStatoFilterChange();
+    }
+
+    // Evidenzia visivamente la scheda della statistica attiva
+    function updateActiveStatCard(selectedStati) {
+        document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
+
+        if (selectedStati.length === 0) {
+            document.getElementById('cardTotali').classList.add('active');
+        } else if (selectedStati.length === 1) {
+            const st = selectedStati[0];
+            if (st === 'Da iniziare') document.getElementById('cardDaIniziare').classList.add('active');
+            else if (st === 'In corso') document.getElementById('cardInCorso').classList.add('active');
+            else if (st === 'In attesa') document.getElementById('cardInAttesa').classList.add('active');
+            else if (st === 'Completata') document.getElementById('cardCompletata').classList.add('active');
+        }
     }
 
     function getSortedNotes(noteArray) {
@@ -1246,7 +1283,6 @@
         alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
     }
 
-    // Modal per Creazione NUOVA COMMESSA
     function openNewCommessaModal() {
         const nowDT = getCurrentDateTime();
 
@@ -1262,7 +1298,6 @@
         document.getElementById('btnSaveModal').innerText = 'Crea Commessa';
         document.getElementById('btnPrintModal').style.display = 'none';
 
-        // Nascondi sezione cronologia per le nuove commesse
         document.getElementById('modalNotesHistorySection').style.display = 'none';
         document.getElementById('modalAddNoteTitle').innerText = '➕ Note Iniziali (Opzionale)';
 
@@ -1273,7 +1308,6 @@
         document.getElementById('editCommessaModal').classList.add('active');
     }
 
-    // Modal per Modifica Commessa Esistente
     function openEditModal(id) {
         const c = commesse.find(item => item.id === id);
         if (!c) return;
@@ -1359,7 +1393,6 @@
         const nowDT = getCurrentDateTime();
 
         if (id) {
-            // Modifica commessa esistente
             const c = commesse.find(item => item.id === id);
             if (!c) return;
 
@@ -1380,7 +1413,6 @@
                 });
             }
         } else {
-            // Creazione Nuova Commessa
             const currentNotes = [];
             if (testoNota !== '') {
                 currentNotes.push({
@@ -1430,7 +1462,6 @@
         document.getElementById('filterCliente').value = '';
         document.getElementById('filterKeyword').value = '';
         
-        // Reset dell'ordinamento a Data Apertura decrescente
         currentSortColumn = 'dataApertura';
         currentSortOrder = 'desc';
 
