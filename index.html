@@ -190,64 +190,6 @@
             85% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(20px); }
         }
-
-        /* DASHBOARD STATISTICHE - NUOVO STILE */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-        }
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-        .stat-content {
-            display: flex;
-            flex-direction: column;
-        }
-        .stat-value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            line-height: 1.2;
-            color: var(--heading-color);
-        }
-        .stat-label {
-            font-size: 0.82rem;
-            color: var(--subtext-color);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Varianti Colori per le Schede Statistiche */
-        .stat-card.totale .stat-icon { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
-        .stat-card.da-iniziare .stat-icon { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
-        .stat-card.in-corso .stat-icon { background: rgba(234, 179, 8, 0.15); color: #ca8a04; }
-        .stat-card.in-attesa .stat-icon { background: rgba(100, 116, 139, 0.12); color: #64748b; }
-        .stat-card.completata .stat-icon { background: rgba(16, 185, 129, 0.12); color: #10b981; }
-
         .card {
             background: var(--card-bg);
             border-radius: 8px;
@@ -257,6 +199,44 @@
             width: 100%;
             border: 1px solid var(--border);
         }
+
+        /* Dashboard Statistiche */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--border);
+        }
+        .stat-card.st-da-iniziare-border { border-left-color: #ef4444; }
+        .stat-card.st-in-corso-border { border-left-color: #eab308; }
+        .stat-card.st-in-attesa-border { border-left-color: #64748b; }
+        .stat-card.st-completata-border { border-left-color: #10b981; }
+        .stat-card.st-totale-border { border-left-color: #2563eb; }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--subtext-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--heading-color);
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -687,7 +667,6 @@
             padding-right: 5px;
         }
 
-        /* Stili specifici per la Stampa */
         @media print {
             body * {
                 visibility: hidden;
@@ -779,45 +758,6 @@
         </div>
     </header>
 
-    <!-- DASHBOARD STATISTICHE -->
-    <div class="stats-grid">
-        <div class="stat-card totale">
-            <div class="stat-icon">📋</div>
-            <div class="stat-content">
-                <span class="stat-value" id="statTotali">0</span>
-                <span class="stat-label">Totali</span>
-            </div>
-        </div>
-        <div class="stat-card da-iniziare">
-            <div class="stat-icon">🔴</div>
-            <div class="stat-content">
-                <span class="stat-value" id="statDaIniziare">0</span>
-                <span class="stat-label">Da Iniziare</span>
-            </div>
-        </div>
-        <div class="stat-card in-corso">
-            <div class="stat-icon">⚡</div>
-            <div class="stat-content">
-                <span class="stat-value" id="statInCorso">0</span>
-                <span class="stat-label">In Corso</span>
-            </div>
-        </div>
-        <div class="stat-card in-attesa">
-            <div class="stat-icon">⏸️</div>
-            <div class="stat-content">
-                <span class="stat-value" id="statInAttesa">0</span>
-                <span class="stat-label">In Attesa</span>
-            </div>
-        </div>
-        <div class="stat-card completata">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-                <span class="stat-value" id="statCompletate">0</span>
-                <span class="stat-label">Completate</span>
-            </div>
-        </div>
-    </div>
-
     <div class="card">
         <h2 id="formTitle" style="font-size: 1.1rem; margin-bottom: 15px; color: var(--heading-color);">Nuova Commessa</h2>
         <form id="commessaForm">
@@ -866,7 +806,7 @@
                     </div>
                     <div class="form-group full-width" style="grid-column: span 2;">
                         <label for="nuovaNota">Testo Nota</label>
-                        <textarea id="nuovaNota" placeholder="Scrivi un aggiornamento..."></textarea>
+                        <textarea id="nuovaNota" placeholder="Scrivi un aggiornamento..." oninput="autoUpdateNoteDateTime('dataNota', 'oraNota')"></textarea>
                     </div>
                 </div>
             </div>
@@ -875,6 +815,30 @@
                 <button type="button" class="btn-secondary" id="btnCancel" onclick="resetForm()" style="display:none;">Annulla</button>
             </div>
         </form>
+    </div>
+
+    <!-- Dashboard Statistiche -->
+    <div class="stats-grid">
+        <div class="stat-card st-da-iniziare-border">
+            <span class="stat-label">Da Iniziare</span>
+            <span class="stat-value" id="statDaIniziare">0</span>
+        </div>
+        <div class="stat-card st-in-corso-border">
+            <span class="stat-label">In Corso</span>
+            <span class="stat-value" id="statInCorso">0</span>
+        </div>
+        <div class="stat-card st-in-attesa-border">
+            <span class="stat-label">In Attesa</span>
+            <span class="stat-value" id="statInAttesa">0</span>
+        </div>
+        <div class="stat-card st-completata-border">
+            <span class="stat-label">Completate</span>
+            <span class="stat-value" id="statCompletate">0</span>
+        </div>
+        <div class="stat-card st-totale-border">
+            <span class="stat-label">Totali</span>
+            <span class="stat-value" id="statTotali">0</span>
+        </div>
     </div>
 
     <div class="card table-card">
@@ -1001,7 +965,7 @@
                         </div>
                         <div class="form-group full-width" style="grid-column: span 2;">
                             <label for="modalNuovaNota">Testo Nota</label>
-                            <textarea id="modalNuovaNota" placeholder="Scrivi un aggiornamento..."></textarea>
+                            <textarea id="modalNuovaNota" placeholder="Scrivi un aggiornamento..." oninput="autoUpdateNoteDateTime('modalDataNota', 'modalOraNota')"></textarea>
                         </div>
                     </div>
                 </div>
@@ -1020,6 +984,25 @@
 </div>
 
 <script>
+    // Funzione per ottenere Data (YYYY-MM-DD) e Ora (HH:MM) attuali
+    function getCurrentDateTime() {
+        const now = new Date();
+        const currentDate = now.toISOString().slice(0, 10);
+        const currentTime = now.toTimeString().slice(0, 5);
+        return { currentDate, currentTime };
+    }
+
+    // Funzione per aggiornare automaticamente Data e Ora all'inserimento nota
+    function autoUpdateNoteDateTime(dataInputId, oraInputId) {
+        const { currentDate, currentTime } = getCurrentDateTime();
+        
+        const dataElem = document.getElementById(dataInputId);
+        const oraElem = document.getElementById(oraInputId);
+        
+        if (dataElem) dataElem.value = currentDate;
+        if (oraElem) oraElem.value = currentTime;
+    }
+
     // Gestione Tema (Scuro/Chiaro)
     function initTheme() {
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -1125,15 +1108,13 @@
         }
     });
 
-    const now = new Date();
-    const todayISO = now.toISOString().slice(0, 10);
-    const timeNow = now.toTimeString().slice(0, 5);
-    const currentMonth = todayISO.slice(0, 7);
+    const initDT = getCurrentDateTime();
+    const currentMonth = initDT.currentDate.slice(0, 7);
 
     document.getElementById('filterMese').value = currentMonth;
-    document.getElementById('dataApertura').value = todayISO;
-    document.getElementById('dataNota').value = todayISO;
-    document.getElementById('oraNota').value = timeNow;
+    document.getElementById('dataApertura').value = initDT.currentDate;
+    document.getElementById('dataNota').value = initDT.currentDate;
+    document.getElementById('oraNota').value = initDT.currentTime;
 
     populateAnnoDropdown();
 
@@ -1151,11 +1132,13 @@
             if (existing) currentNotes = existing.noteCronologia || [];
         }
 
+        const nowDT = getCurrentDateTime();
+
         if (testoNota !== '') {
             currentNotes.push({
                 id: Date.now(),
-                data: dataNota || todayISO,
-                ora: oraNota || new Date().toTimeString().slice(0, 5),
+                data: dataNota || nowDT.currentDate,
+                ora: oraNota || nowDT.currentTime,
                 testo: testoNota
             });
         }
@@ -1186,13 +1169,16 @@
 
     function resetForm() {
         form.reset();
+        const nowDT = getCurrentDateTime();
         document.getElementById('commessaId').value = '';
         document.getElementById('formTitle').innerText = 'Nuova Commessa';
         document.getElementById('btnSave').innerText = 'Salva Commessa';
         document.getElementById('btnCancel').style.display = 'none';
-        document.getElementById('dataApertura').value = todayISO;
-        document.getElementById('dataNota').value = todayISO;
-        document.getElementById('oraNota').value = timeNow;
+        
+        // Impostazione automatica alla data e ora attuali per la nuova commessa
+        document.getElementById('dataApertura').value = nowDT.currentDate;
+        document.getElementById('dataNota').value = nowDT.currentDate;
+        document.getElementById('oraNota').value = nowDT.currentTime;
     }
 
     function toggleDropdown(e) {
@@ -1339,6 +1325,8 @@
         const c = commesse.find(item => item.id === id);
         if (!c) return;
 
+        const nowDT = getCurrentDateTime();
+
         document.getElementById('modalCommessaId').value = c.id;
         document.getElementById('modalCodice').value = c.codice;
         document.getElementById('modalCliente').value = c.cliente || '';
@@ -1349,8 +1337,8 @@
 
         document.getElementById('modalEditTitle').innerText = `Gestione Commessa: ${c.codice}`;
 
-        document.getElementById('modalDataNota').value = todayISO;
-        document.getElementById('modalOraNota').value = timeNow;
+        document.getElementById('modalDataNota').value = nowDT.currentDate;
+        document.getElementById('modalOraNota').value = nowDT.currentTime;
         document.getElementById('modalNuovaNota').value = '';
 
         renderModalNotesHistory(c);
@@ -1419,12 +1407,14 @@
         const dataNota = document.getElementById('modalDataNota').value;
         const oraNota = document.getElementById('modalOraNota').value;
 
+        const nowDT = getCurrentDateTime();
+
         if (testoNota !== '') {
             if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
             c.noteCronologia.push({
                 id: Date.now(),
-                data: dataNota || todayISO,
-                ora: oraNota || new Date().toTimeString().slice(0, 5),
+                data: dataNota || nowDT.currentDate,
+                ora: oraNota || nowDT.currentTime,
                 testo: testoNota
             });
         }
@@ -1460,26 +1450,26 @@
         onStatoFilterChange();
     }
 
-    // AGGIORNAMENTO STATISTICHE DINAMICHE
     function updateStatistics(filteredCommesse) {
-        let cntTotale = filteredCommesse.length;
-        let cntDaIniziare = 0;
-        let cntInCorso = 0;
-        let cntInAttesa = 0;
-        let cntCompletate = 0;
+        let daIniziare = 0;
+        let inCorso = 0;
+        let inAttesa = 0;
+        let completate = 0;
 
         filteredCommesse.forEach(c => {
-            if (c.stato === 'Da iniziare') cntDaIniziare++;
-            else if (c.stato === 'In corso') cntInCorso++;
-            else if (c.stato === 'In attesa') cntInAttesa++;
-            else if (c.stato === 'Completata') cntCompletate++;
+            switch(c.stato) {
+                case 'Da iniziare': daIniziare++; break;
+                case 'In corso': inCorso++; break;
+                case 'In attesa': inAttesa++; break;
+                case 'Completata': completate++; break;
+            }
         });
 
-        document.getElementById('statTotali').innerText = cntTotale;
-        document.getElementById('statDaIniziare').innerText = cntDaIniziare;
-        document.getElementById('statInCorso').innerText = cntInCorso;
-        document.getElementById('statInAttesa').innerText = cntInAttesa;
-        document.getElementById('statCompletate').innerText = cntCompletate;
+        document.getElementById('statDaIniziare').innerText = daIniziare;
+        document.getElementById('statInCorso').innerText = inCorso;
+        document.getElementById('statInAttesa').innerText = inAttesa;
+        document.getElementById('statCompletate').innerText = completate;
+        document.getElementById('statTotali').innerText = filteredCommesse.length;
     }
 
     function renderTable() {
@@ -1514,7 +1504,6 @@
             return matchesAnno && matchesMonth && matchesStato && matchesCliente && matchesKeyword;
         });
 
-        // Aggiorna le statistiche sulle commesse visibili
         updateStatistics(filtered);
 
         const iconApertura = document.getElementById('sort-icon-dataApertura');
