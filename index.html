@@ -190,6 +190,64 @@
             85% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(20px); }
         }
+
+        /* DASHBOARD STATISTICHE - NUOVO STILE */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--heading-color);
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--subtext-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Varianti Colori per le Schede Statistiche */
+        .stat-card.totale .stat-icon { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+        .stat-card.da-iniziare .stat-icon { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+        .stat-card.in-corso .stat-icon { background: rgba(234, 179, 8, 0.15); color: #ca8a04; }
+        .stat-card.in-attesa .stat-icon { background: rgba(100, 116, 139, 0.12); color: #64748b; }
+        .stat-card.completata .stat-icon { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+
         .card {
             background: var(--card-bg);
             border-radius: 8px;
@@ -402,7 +460,6 @@
             font-weight: 600;
             display: inline-block;
         }
-        /* Stato Da iniziare in rosso */
         .st-da-iniziare { background: #fee2e2; color: #991b1b; }
         .st-in-corso { background: #fef08a; color: #854d0e; }
         .st-in-attesa { background: #e2e8f0; color: #475569; }
@@ -721,6 +778,45 @@
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
         </div>
     </header>
+
+    <!-- DASHBOARD STATISTICHE -->
+    <div class="stats-grid">
+        <div class="stat-card totale">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+                <span class="stat-value" id="statTotali">0</span>
+                <span class="stat-label">Totali</span>
+            </div>
+        </div>
+        <div class="stat-card da-iniziare">
+            <div class="stat-icon">🔴</div>
+            <div class="stat-content">
+                <span class="stat-value" id="statDaIniziare">0</span>
+                <span class="stat-label">Da Iniziare</span>
+            </div>
+        </div>
+        <div class="stat-card in-corso">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-content">
+                <span class="stat-value" id="statInCorso">0</span>
+                <span class="stat-label">In Corso</span>
+            </div>
+        </div>
+        <div class="stat-card in-attesa">
+            <div class="stat-icon">⏸️</div>
+            <div class="stat-content">
+                <span class="stat-value" id="statInAttesa">0</span>
+                <span class="stat-label">In Attesa</span>
+            </div>
+        </div>
+        <div class="stat-card completata">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <span class="stat-value" id="statCompletate">0</span>
+                <span class="stat-label">Completate</span>
+            </div>
+        </div>
+    </div>
 
     <div class="card">
         <h2 id="formTitle" style="font-size: 1.1rem; margin-bottom: 15px; color: var(--heading-color);">Nuova Commessa</h2>
@@ -1364,6 +1460,28 @@
         onStatoFilterChange();
     }
 
+    // AGGIORNAMENTO STATISTICHE DINAMICHE
+    function updateStatistics(filteredCommesse) {
+        let cntTotale = filteredCommesse.length;
+        let cntDaIniziare = 0;
+        let cntInCorso = 0;
+        let cntInAttesa = 0;
+        let cntCompletate = 0;
+
+        filteredCommesse.forEach(c => {
+            if (c.stato === 'Da iniziare') cntDaIniziare++;
+            else if (c.stato === 'In corso') cntInCorso++;
+            else if (c.stato === 'In attesa') cntInAttesa++;
+            else if (c.stato === 'Completata') cntCompletate++;
+        });
+
+        document.getElementById('statTotali').innerText = cntTotale;
+        document.getElementById('statDaIniziare').innerText = cntDaIniziare;
+        document.getElementById('statInCorso').innerText = cntInCorso;
+        document.getElementById('statInAttesa').innerText = cntInAttesa;
+        document.getElementById('statCompletate').innerText = cntCompletate;
+    }
+
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
@@ -1395,6 +1513,9 @@
 
             return matchesAnno && matchesMonth && matchesStato && matchesCliente && matchesKeyword;
         });
+
+        // Aggiorna le statistiche sulle commesse visibili
+        updateStatistics(filtered);
 
         const iconApertura = document.getElementById('sort-icon-dataApertura');
         const iconStato = document.getElementById('sort-icon-stato');
