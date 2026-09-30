@@ -217,6 +217,7 @@
             gap: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             border-left: 4px solid var(--border);
+            position: relative;
         }
         .stat-card.st-da-iniziare-border { border-left-color: #ef4444; }
         .stat-card.st-in-corso-border { border-left-color: #eab308; }
@@ -224,6 +225,11 @@
         .stat-card.st-completata-border { border-left-color: #10b981; }
         .stat-card.st-totale-border { border-left-color: #2563eb; }
 
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
         .stat-label {
             font-size: 0.8rem;
             font-weight: 600;
@@ -231,6 +237,21 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        .stat-icon {
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+        .stat-icon.icon-da-iniziare { background-color: rgba(239, 68, 68, 0.12); color: #ef4444; }
+        .stat-icon.icon-in-corso { background-color: rgba(234, 179, 8, 0.15); color: #d97706; }
+        .stat-icon.icon-in-attesa { background-color: rgba(100, 116, 139, 0.12); color: #64748b; }
+        .stat-icon.icon-completata { background-color: rgba(16, 185, 129, 0.12); color: #10b981; }
+        .stat-icon.icon-totale { background-color: rgba(37, 99, 235, 0.12); color: #2563eb; }
+
         .stat-value {
             font-size: 1.6rem;
             font-weight: 700;
@@ -817,26 +838,41 @@
         </form>
     </div>
 
-    <!-- Dashboard Statistiche -->
+    <!-- Dashboard Statistiche Con Iconcine Colorate -->
     <div class="stats-grid">
         <div class="stat-card st-da-iniziare-border">
-            <span class="stat-label">Da Iniziare</span>
+            <div class="stat-header">
+                <span class="stat-label">Da Iniziare</span>
+                <span class="stat-icon icon-da-iniziare" title="Da iniziare">🔴</span>
+            </div>
             <span class="stat-value" id="statDaIniziare">0</span>
         </div>
         <div class="stat-card st-in-corso-border">
-            <span class="stat-label">In Corso</span>
+            <div class="stat-header">
+                <span class="stat-label">In Corso</span>
+                <span class="stat-icon icon-in-corso" title="In corso">🟡</span>
+            </div>
             <span class="stat-value" id="statInCorso">0</span>
         </div>
         <div class="stat-card st-in-attesa-border">
-            <span class="stat-label">In Attesa</span>
+            <div class="stat-header">
+                <span class="stat-label">In Attesa</span>
+                <span class="stat-icon icon-in-attesa" title="In attesa">⚪</span>
+            </div>
             <span class="stat-value" id="statInAttesa">0</span>
         </div>
         <div class="stat-card st-completata-border">
-            <span class="stat-label">Completate</span>
+            <div class="stat-header">
+                <span class="stat-label">Completate</span>
+                <span class="stat-icon icon-completata" title="Completata">🟢</span>
+            </div>
             <span class="stat-value" id="statCompletate">0</span>
         </div>
         <div class="stat-card st-totale-border">
-            <span class="stat-label">Totali</span>
+            <div class="stat-header">
+                <span class="stat-label">Totali</span>
+                <span class="stat-icon icon-totale" title="Totali">📊</span>
+            </div>
             <span class="stat-value" id="statTotali">0</span>
         </div>
     </div>
