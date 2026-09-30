@@ -305,6 +305,15 @@
         .btn-primary:hover {
             background-color: var(--primary-hover);
         }
+        .btn-success-new {
+            background-color: #10b981;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+        .btn-success-new:hover {
+            background-color: #059669;
+        }
         .btn-danger {
             background-color: var(--danger);
             color: white;
@@ -751,6 +760,7 @@
             <h1>Gestionale Commesse Mensile</h1>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn-success-new" onclick="openNewCommessaModal()">➕ NUOVA COMMESSA</button>
             <button type="button" class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">🌙 Modalità Scura</button>
             <div id="backupBadge" class="backup-status-badge">
                 <span class="dot"></span> Prossimo backup: <span id="backupTimer">02:00</span>
@@ -778,65 +788,6 @@
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
         </div>
     </header>
-
-    <div class="card">
-        <h2 id="formTitle" style="font-size: 1.1rem; margin-bottom: 15px; color: var(--heading-color);">Nuova Commessa</h2>
-        <form id="commessaForm">
-            <input type="hidden" id="commessaId">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="codice">Codice/Nome *</label>
-                    <input type="text" id="codice" required placeholder="Es. COM-2026-01">
-                </div>
-                <div class="form-group">
-                    <label for="cliente">Cliente</label>
-                    <input type="text" id="cliente" placeholder="Es. Azienda Rossi">
-                </div>
-                <div class="form-group">
-                    <label for="dataApertura">Data Apertura *</label>
-                    <input type="date" id="dataApertura" required>
-                </div>
-                <div class="form-group">
-                    <label for="dataChiusura">Data Chiusura</label>
-                    <input type="date" id="dataChiusura">
-                </div>
-                <div class="form-group">
-                    <label for="stato">Stato Avanzamento</label>
-                    <select id="stato">
-                        <option value="Da iniziare">Da iniziare</option>
-                        <option value="In corso">In corso</option>
-                        <option value="In attesa">In attesa</option>
-                        <option value="Completata">Completata</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="percentuale">% Avanzamento</label>
-                    <input type="number" id="percentuale" min="0" max="100" value="0">
-                </div>
-            </div>
-            <div style="background: var(--section-bg); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border);">
-                <label style="color: var(--heading-color); margin-bottom: 8px; display: block;">➕ Aggiungi Nota</label>
-                <div class="form-grid" style="margin-bottom: 0;">
-                    <div class="form-group">
-                        <label for="dataNota">Data Nota</label>
-                        <input type="date" id="dataNota">
-                    </div>
-                    <div class="form-group">
-                        <label for="oraNota">Ora Nota</label>
-                        <input type="time" id="oraNota">
-                    </div>
-                    <div class="form-group full-width" style="grid-column: span 2;">
-                        <label for="nuovaNota">Testo Nota</label>
-                        <textarea id="nuovaNota" placeholder="Scrivi un aggiornamento..." oninput="autoUpdateNoteDateTime('dataNota', 'oraNota')"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" class="btn-primary" id="btnSave">Salva Commessa</button>
-                <button type="button" class="btn-secondary" id="btnCancel" onclick="resetForm()" style="display:none;">Annulla</button>
-            </div>
-        </form>
-    </div>
 
     <!-- Dashboard Statistiche Con Iconcine Colorate -->
     <div class="stats-grid">
@@ -880,6 +831,8 @@
     <div class="card table-card">
         <div class="controls">
             <div class="filter-group">
+                <button type="button" class="btn-success-new" onclick="openNewCommessaModal()">➕ NUOVA COMMESSA</button>
+
                 <label for="filterAnno">Anno:</label>
                 <select id="filterAnno" onchange="renderTable()" style="width: auto;">
                     <option value="">Tutti</option>
@@ -939,7 +892,7 @@
     </div>
 </div>
 
-<!-- Modal Modifica Commessa Completa con Note e Stampa -->
+<!-- Modal Modifica / Nuova Commessa Completa con Note e Stampa -->
 <div class="modal-overlay" id="editCommessaModal">
     <div class="modal-card">
         <div class="modal-header">
@@ -953,11 +906,11 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="modalCodice">Codice/Nome *</label>
-                        <input type="text" id="modalCodice" required>
+                        <input type="text" id="modalCodice" required placeholder="Es. COM-2026-01">
                     </div>
                     <div class="form-group">
                         <label for="modalCliente">Cliente</label>
-                        <input type="text" id="modalCliente">
+                        <input type="text" id="modalCliente" placeholder="Es. Azienda Rossi">
                     </div>
                     <div class="form-group">
                         <label for="modalDataApertura">Data Apertura *</label>
@@ -978,18 +931,18 @@
                     </div>
                     <div class="form-group">
                         <label for="modalPercentuale">% Avanzamento</label>
-                        <input type="number" id="modalPercentuale" min="0" max="100">
+                        <input type="number" id="modalPercentuale" min="0" max="100" value="0">
                     </div>
                 </div>
 
-                <div style="border-top: 1px solid var(--border); padding-top: 12px;">
+                <div id="modalNotesHistorySection" style="border-top: 1px solid var(--border); padding-top: 12px;">
                     <label style="color: var(--heading-color); font-size: 0.95rem; margin-bottom: 8px; display: block;">📝 Cronologia Note</label>
                     <div id="modalNotesHistory" class="notes-list-container">
                     </div>
                 </div>
 
                 <div class="add-note-section" style="background: var(--section-bg); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
-                    <label style="color: var(--heading-color); margin-bottom: 8px; display: block;">➕ Aggiungi Nuova Nota</label>
+                    <label id="modalAddNoteTitle" style="color: var(--heading-color); margin-bottom: 8px; display: block;">➕ Aggiungi Nuova Nota</label>
                     <div class="form-grid" style="margin-bottom: 0;">
                         <div class="form-group">
                             <label for="modalDataNota">Data Nota</label>
@@ -1001,15 +954,15 @@
                         </div>
                         <div class="form-group full-width" style="grid-column: span 2;">
                             <label for="modalNuovaNota">Testo Nota</label>
-                            <textarea id="modalNuovaNota" placeholder="Scrivi un aggiornamento..." oninput="autoUpdateNoteDateTime('modalDataNota', 'modalOraNota')"></textarea>
+                            <textarea id="modalNuovaNota" placeholder="Scrivi una nota iniziale o un aggiornamento..." oninput="autoUpdateNoteDateTime('modalDataNota', 'modalOraNota')"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="window.print()" style="background-color: #0284c7;">🖨️ Stampa</button>
+                <button type="button" class="btn-secondary" id="btnPrintModal" onclick="window.print()" style="background-color: #0284c7;">🖨️ Stampa</button>
                 <button type="button" class="btn-secondary" onclick="closeEditModal()">Annulla</button>
-                <button type="submit" class="btn-primary">Salva Modifiche</button>
+                <button type="submit" class="btn-primary" id="btnSaveModal">Salva Modifiche</button>
             </div>
         </form>
     </div>
@@ -1035,8 +988,8 @@
         const dataElem = document.getElementById(dataInputId);
         const oraElem = document.getElementById(oraInputId);
         
-        if (dataElem) dataElem.value = currentDate;
-        if (oraElem) oraElem.value = currentTime;
+        if (dataElem && !dataElem.value) dataElem.value = currentDate;
+        if (oraElem && !oraElem.value) oraElem.value = currentTime;
     }
 
     // Gestione Tema (Scuro/Chiaro)
@@ -1150,74 +1103,8 @@
     const currentMonth = initDT.currentDate.slice(0, 7);
 
     document.getElementById('filterMese').value = currentMonth;
-    document.getElementById('dataApertura').value = initDT.currentDate;
-    document.getElementById('dataNota').value = initDT.currentDate;
-    document.getElementById('oraNota').value = initDT.currentTime;
 
     populateAnnoDropdown();
-
-    const form = document.getElementById('commessaForm');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const id = document.getElementById('commessaId').value;
-        const testoNota = document.getElementById('nuovaNota').value.trim();
-        const dataNota = document.getElementById('dataNota').value;
-        const oraNota = document.getElementById('oraNota').value;
-        let currentNotes = [];
-
-        if (id) {
-            const existing = commesse.find(c => c.id === parseInt(id));
-            if (existing) currentNotes = existing.noteCronologia || [];
-        }
-
-        const nowDT = getCurrentDateTime();
-
-        if (testoNota !== '') {
-            currentNotes.push({
-                id: Date.now(),
-                data: dataNota || nowDT.currentDate,
-                ora: oraNota || nowDT.currentTime,
-                testo: testoNota
-            });
-        }
-
-        const commessaData = {
-            id: id ? parseInt(id) : Date.now(),
-            codice: document.getElementById('codice').value,
-            cliente: document.getElementById('cliente').value,
-            dataApertura: document.getElementById('dataApertura').value,
-            dataChiusura: document.getElementById('dataChiusura').value,
-            stato: document.getElementById('stato').value,
-            percentuale: parseInt(document.getElementById('percentuale').value) || 0,
-            noteCronologia: currentNotes
-        };
-
-        if (id) {
-            const index = commesse.findIndex(c => c.id === parseInt(id));
-            commesse[index] = commessaData;
-        } else {
-            commesse.push(commessaData);
-        }
-
-        saveToLocalStorage();
-        populateAnnoDropdown();
-        resetForm();
-        renderTable();
-    });
-
-    function resetForm() {
-        form.reset();
-        const nowDT = getCurrentDateTime();
-        document.getElementById('commessaId').value = '';
-        document.getElementById('formTitle').innerText = 'Nuova Commessa';
-        document.getElementById('btnSave').innerText = 'Salva Commessa';
-        document.getElementById('btnCancel').style.display = 'none';
-        
-        // Impostazione automatica alla data e ora attuali per la nuova commessa
-        document.getElementById('dataApertura').value = nowDT.currentDate;
-        document.getElementById('dataNota').value = nowDT.currentDate;
-        document.getElementById('oraNota').value = nowDT.currentTime;
-    }
 
     function toggleDropdown(e) {
         e.stopPropagation();
@@ -1359,6 +1246,34 @@
         alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
     }
 
+    // Modal per Creazione NUOVA COMMESSA
+    function openNewCommessaModal() {
+        const nowDT = getCurrentDateTime();
+
+        document.getElementById('modalCommessaId').value = '';
+        document.getElementById('modalCodice').value = '';
+        document.getElementById('modalCliente').value = '';
+        document.getElementById('modalDataApertura').value = nowDT.currentDate;
+        document.getElementById('modalDataChiusura').value = '';
+        document.getElementById('modalStato').value = 'Da iniziare';
+        document.getElementById('modalPercentuale').value = 0;
+
+        document.getElementById('modalEditTitle').innerText = '➕ Nuova Commessa';
+        document.getElementById('btnSaveModal').innerText = 'Crea Commessa';
+        document.getElementById('btnPrintModal').style.display = 'none';
+
+        // Nascondi sezione cronologia per le nuove commesse
+        document.getElementById('modalNotesHistorySection').style.display = 'none';
+        document.getElementById('modalAddNoteTitle').innerText = '➕ Note Iniziali (Opzionale)';
+
+        document.getElementById('modalDataNota').value = nowDT.currentDate;
+        document.getElementById('modalOraNota').value = nowDT.currentTime;
+        document.getElementById('modalNuovaNota').value = '';
+
+        document.getElementById('editCommessaModal').classList.add('active');
+    }
+
+    // Modal per Modifica Commessa Esistente
     function openEditModal(id) {
         const c = commesse.find(item => item.id === id);
         if (!c) return;
@@ -1374,6 +1289,11 @@
         document.getElementById('modalPercentuale').value = c.percentuale;
 
         document.getElementById('modalEditTitle').innerText = `Gestione Commessa: ${c.codice}`;
+        document.getElementById('btnSaveModal').innerText = 'Salva Modifiche';
+        document.getElementById('btnPrintModal').style.display = 'inline-block';
+
+        document.getElementById('modalNotesHistorySection').style.display = 'block';
+        document.getElementById('modalAddNoteTitle').innerText = '➕ Aggiungi Nuova Nota';
 
         document.getElementById('modalDataNota').value = nowDT.currentDate;
         document.getElementById('modalOraNota').value = nowDT.currentTime;
@@ -1430,31 +1350,59 @@
 
     function saveCommessaFromModal(e) {
         e.preventDefault();
-        const id = parseInt(document.getElementById('modalCommessaId').value);
-        const c = commesse.find(item => item.id === id);
-        if (!c) return;
-
-        c.codice = document.getElementById('modalCodice').value;
-        c.cliente = document.getElementById('modalCliente').value;
-        c.dataApertura = document.getElementById('modalDataApertura').value;
-        c.dataChiusura = document.getElementById('modalDataChiusura').value;
-        c.stato = document.getElementById('modalStato').value;
-        c.percentuale = parseInt(document.getElementById('modalPercentuale').value) || 0;
+        const idVal = document.getElementById('modalCommessaId').value;
+        const id = idVal ? parseInt(idVal) : null;
 
         const testoNota = document.getElementById('modalNuovaNota').value.trim();
         const dataNota = document.getElementById('modalDataNota').value;
         const oraNota = document.getElementById('modalOraNota').value;
-
         const nowDT = getCurrentDateTime();
 
-        if (testoNota !== '') {
-            if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
-            c.noteCronologia.push({
+        if (id) {
+            // Modifica commessa esistente
+            const c = commesse.find(item => item.id === id);
+            if (!c) return;
+
+            c.codice = document.getElementById('modalCodice').value;
+            c.cliente = document.getElementById('modalCliente').value;
+            c.dataApertura = document.getElementById('modalDataApertura').value;
+            c.dataChiusura = document.getElementById('modalDataChiusura').value;
+            c.stato = document.getElementById('modalStato').value;
+            c.percentuale = parseInt(document.getElementById('modalPercentuale').value) || 0;
+
+            if (testoNota !== '') {
+                if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
+                c.noteCronologia.push({
+                    id: Date.now(),
+                    data: dataNota || nowDT.currentDate,
+                    ora: oraNota || nowDT.currentTime,
+                    testo: testoNota
+                });
+            }
+        } else {
+            // Creazione Nuova Commessa
+            const currentNotes = [];
+            if (testoNota !== '') {
+                currentNotes.push({
+                    id: Date.now(),
+                    data: dataNota || nowDT.currentDate,
+                    ora: oraNota || nowDT.currentTime,
+                    testo: testoNota
+                });
+            }
+
+            const newCommessa = {
                 id: Date.now(),
-                data: dataNota || nowDT.currentDate,
-                ora: oraNota || nowDT.currentTime,
-                testo: testoNota
-            });
+                codice: document.getElementById('modalCodice').value,
+                cliente: document.getElementById('modalCliente').value,
+                dataApertura: document.getElementById('modalDataApertura').value,
+                dataChiusura: document.getElementById('modalDataChiusura').value,
+                stato: document.getElementById('modalStato').value,
+                percentuale: parseInt(document.getElementById('modalPercentuale').value) || 0,
+                noteCronologia: currentNotes
+            };
+
+            commesse.push(newCommessa);
         }
 
         saveToLocalStorage();
