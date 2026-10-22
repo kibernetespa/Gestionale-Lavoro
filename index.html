@@ -21,7 +21,6 @@
             --danger: #ef4444;
             --success: #10b981;
         }
-
         [data-theme="dark"] {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
@@ -34,7 +33,6 @@
             --section-bg: #0f172a;
             --border: #334155;
         }
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -199,8 +197,6 @@
             width: 100%;
             border: 1px solid var(--border);
         }
-
-        /* Dashboard Statistiche Interattive e Cliccabili con Pulsante Reset */
         .stats-wrapper {
             margin-bottom: 25px;
         }
@@ -235,7 +231,6 @@
             background-color: var(--border);
             color: var(--heading-color);
         }
-
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -269,7 +264,6 @@
         .stat-card.st-in-attesa-border { border-left-color: #64748b; }
         .stat-card.st-completata-border { border-left-color: #10b981; }
         .stat-card.st-totale-border { border-left-color: #2563eb; }
-
         .stat-header {
             display: flex;
             align-items: center;
@@ -296,13 +290,11 @@
         .stat-icon.icon-in-attesa { background-color: rgba(100, 116, 139, 0.12); color: #64748b; }
         .stat-icon.icon-completata { background-color: rgba(16, 185, 129, 0.12); color: #10b981; }
         .stat-icon.icon-totale { background-color: rgba(37, 99, 235, 0.12); color: #2563eb; }
-
         .stat-value {
             font-size: 1.6rem;
             font-weight: 700;
             color: var(--heading-color);
         }
-
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -396,6 +388,14 @@
         }
         .btn-duplicate-full:hover {
             background-color: #0369a1;
+        }
+        .btn-duplicate-selected-notes {
+            background-color: #0d9488;
+            color: white;
+            font-size: 0.85rem;
+        }
+        .btn-duplicate-selected-notes:hover {
+            background-color: #0f766e;
         }
         .controls {
             display: flex;
@@ -741,7 +741,6 @@
             gap: 8px;
             padding-right: 5px;
         }
-
         @media print {
             body * {
                 visibility: hidden;
@@ -827,14 +826,14 @@
                 </select>
             </div>
             <button class="btn-duplicate-reset" onclick="duplicateSelectedResetToNextMonth()">1️⃣ Duplica Selezionate (Reset Note)</button>
-            <button class="btn-duplicate-full" onclick="duplicateNonCompletedToNextMonth()">2️⃣ Duplica In Correnti (Con Note)</button>
+            <button class="btn-duplicate-selected-notes" onclick="duplicateSelectedWithNotesToNextMonth()">2️⃣ Duplica Selezionate In Correnti (Con Note)</button>
+            <button class="btn-duplicate-full" onclick="duplicateNonCompletedToNextMonth()">3️⃣ Duplica Tutte Incomplete (Con Note)</button>
             <button class="btn-export" onclick="exportData()">💾 Backup JSON manuale</button>
             <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Importa JSON</button>
             <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
         </div>
     </header>
-
-    <!-- Dashboard Statistiche Cliccabili per Filtrare con Pulsante di Reset -->
+    
     <div class="stats-wrapper">
         <div class="stats-header-bar">
             <span class="stats-title">Panoramica Stato Commesse</span>
@@ -842,7 +841,6 @@
                 🔄 Reset Filtro Stato
             </button>
         </div>
-
         <div class="stats-grid">
             <div class="stat-card st-da-iniziare-border" id="cardDaIniziare" onclick="filterByStatStato('Da iniziare')" title="Filtra per 'Da iniziare'">
                 <div class="stat-header">
@@ -886,12 +884,10 @@
         <div class="controls">
             <div class="filter-group">
                 <button type="button" class="btn-success-new" onclick="openNewCommessaModal()">➕ NUOVA COMMESSA</button>
-
                 <label for="filterAnno">Anno:</label>
                 <select id="filterAnno" onchange="renderTable()" style="width: auto;">
                     <option value="">Tutti</option>
                 </select>
-
                 <label for="filterMese">Mese:</label>
                 <input type="month" id="filterMese" onchange="renderTable()" style="width: auto;">
                 
@@ -910,10 +906,8 @@
                 </div>
                 <label for="filterCliente">Cliente:</label>
                 <input type="text" id="filterCliente" oninput="renderTable()" placeholder="Cerca cliente..." style="width: 130px;">
-
                 <label for="filterKeyword">Parola chiave:</label>
                 <input type="text" id="filterKeyword" oninput="renderTable()" placeholder="Cerca dappertutto..." style="width: 150px;">
-
                 <button class="btn-secondary" onclick="resetFilter()">Reset Generale</button>
             </div>
             <button class="btn-secondary" onclick="exportToCSV()">Esporta CSV</button>
@@ -946,7 +940,6 @@
     </div>
 </div>
 
-<!-- Modal Modifica / Nuova Commessa Completa -->
 <div class="modal-overlay" id="editCommessaModal">
     <div class="modal-card">
         <div class="modal-header">
@@ -988,13 +981,11 @@
                         <input type="number" id="modalPercentuale" min="0" max="100" value="0">
                     </div>
                 </div>
-
                 <div id="modalNotesHistorySection" style="border-top: 1px solid var(--border); padding-top: 12px;">
                     <label style="color: var(--heading-color); font-size: 0.95rem; margin-bottom: 8px; display: block;">📝 Cronologia Note</label>
                     <div id="modalNotesHistory" class="notes-list-container">
                     </div>
                 </div>
-
                 <div class="add-note-section" style="background: var(--section-bg); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
                     <label id="modalAddNoteTitle" style="color: var(--heading-color); margin-bottom: 8px; display: block;">➕ Aggiungi Nuova Nota</label>
                     <div class="form-grid" style="margin-bottom: 0;">
@@ -1033,7 +1024,6 @@
         const currentTime = now.toTimeString().slice(0, 5);
         return { currentDate, currentTime };
     }
-
     function autoUpdateNoteDateTime(dataInputId, oraInputId) {
         const { currentDate, currentTime } = getCurrentDateTime();
         const dataElem = document.getElementById(dataInputId);
@@ -1041,13 +1031,11 @@
         if (dataElem && !dataElem.value) dataElem.value = currentDate;
         if (oraElem && !oraElem.value) oraElem.value = currentTime;
     }
-
     function initTheme() {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeBtnText(savedTheme);
     }
-
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -1055,28 +1043,23 @@
         localStorage.setItem('theme', newTheme);
         updateThemeBtnText(newTheme);
     }
-
     function updateThemeBtnText(theme) {
         const btn = document.getElementById('themeToggleBtn');
         if (btn) {
             btn.innerText = theme === 'dark' ? '☀️ Modalità Chiara' : '🌙 Modalità Scura';
         }
     }
-
     initTheme();
-
     let commesse = JSON.parse(localStorage.getItem('commesse_db')) || [];
     
     let currentSortColumn = 'dataApertura';
     let currentSortOrder = 'desc';
-
     const statoPriority = {
         "Da iniziare": 1,
         "In corso": 2,
         "In attesa": 3,
         "Completata": 4
     };
-
     function sortTable(column) {
         if (currentSortColumn === column) {
             currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
@@ -1086,18 +1069,15 @@
         }
         renderTable();
     }
-
     function saveToLocalStorage() {
         localStorage.setItem('commesse_db', JSON.stringify(commesse));
     }
-
     function formatDate(dStr) {
         if (!dStr) return '-';
         const parts = dStr.split('-');
         if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
         return dStr;
     }
-
     function escapeHtml(str) {
         if (!str) return '';
         return String(str)
@@ -1107,7 +1087,6 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
-
     function populateAnnoDropdown() {
         const selectAnno = document.getElementById('filterAnno');
         const currentValue = selectAnno.value;
@@ -1119,7 +1098,6 @@
                 if (y) anniSet.add(y);
             }
         });
-
         const anniSorted = Array.from(anniSet).sort().reverse();
         selectAnno.innerHTML = '<option value="">Tutti</option>';
         anniSorted.forEach(y => {
@@ -1130,7 +1108,6 @@
         });
         selectAnno.value = currentValue;
     }
-
     commesse.forEach(c => {
         if (!Array.isArray(c.noteCronologia)) {
             c.noteCronologia = [];
@@ -1146,19 +1123,14 @@
             }
         }
     });
-
     const initDT = getCurrentDateTime();
     const currentMonth = initDT.currentDate.slice(0, 7);
-
     document.getElementById('filterMese').value = currentMonth;
-
     populateAnnoDropdown();
-
     function toggleDropdown(e) {
         e.stopPropagation();
         document.getElementById('checkboxesDropdown').classList.toggle('show');
     }
-
     function toggleKebabMenu(e, id, isLastRows) {
         e.stopPropagation();
         document.querySelectorAll('.dropdown-menu').forEach(m => {
@@ -1174,7 +1146,6 @@
             targetMenu.classList.toggle('show');
         }
     }
-
     window.onclick = function(e) {
         if (!e.target.closest('.multiselect-container')) {
             const dropdown = document.getElementById('checkboxesDropdown');
@@ -1184,12 +1155,10 @@
             document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
         }
     };
-
     function getSelectedStati() {
         const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]:checked');
         return Array.from(checkboxes).map(cb => cb.value);
     }
-
     function onStatoFilterChange() {
         const selected = getSelectedStati();
         const label = document.getElementById('multiselectLabel');
@@ -1200,8 +1169,6 @@
         updateActiveStatCard(selected);
         renderTable();
     }
-
-    // Funzione per filtrare cliccando sulle schede o resettare col pulsante Reset
     function filterByStatStato(targetStato) {
         const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]');
         
@@ -1212,14 +1179,10 @@
                 cb.checked = (cb.value === targetStato);
             }
         });
-
         onStatoFilterChange();
     }
-
-    // Evidenzia visivamente la scheda della statistica attiva
     function updateActiveStatCard(selectedStati) {
         document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
-
         if (selectedStati.length === 0) {
             document.getElementById('cardTotali').classList.add('active');
         } else if (selectedStati.length === 1) {
@@ -1230,7 +1193,6 @@
             else if (st === 'Completata') document.getElementById('cardCompletata').classList.add('active');
         }
     }
-
     function getSortedNotes(noteArray) {
         if (!noteArray || noteArray.length === 0) return [];
         return [...noteArray].sort((a, b) => {
@@ -1239,12 +1201,10 @@
             return dtB.localeCompare(dtA);
         });
     }
-
     function toggleSelectAll(masterCheckbox) {
         const checkboxes = document.querySelectorAll('.commessa-checkbox');
         checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
     }
-
     function getNextMonthInfo() {
         const selectedMonth = document.getElementById('filterMese').value || new Date().toISOString().slice(0, 7);
         const [yearStr, monthStr] = selectedMonth.split('-');
@@ -1259,7 +1219,6 @@
         const nextMonthDataApertura = `${nextMonthISO}-01`;
         return { nextMonthISO, nextMonthDataApertura };
     }
-
     function duplicateSelectedResetToNextMonth() {
         const selectedCheckboxes = document.querySelectorAll('.commessa-checkbox:checked');
         if (selectedCheckboxes.length === 0) {
@@ -1294,6 +1253,36 @@
         alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
     }
 
+    /* NUOVA FUNZIONE: DUPLICA SELEZIONATE IN CORRENTI CON NOTE */
+    function duplicateSelectedWithNotesToNextMonth() {
+        const selectedCheckboxes = document.querySelectorAll('.commessa-checkbox:checked');
+        if (selectedCheckboxes.length === 0) {
+            alert('Seleziona almeno una commessa tramite le caselle di spunta (flag).');
+            return;
+        }
+        const selectedIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+        const commesseToDuplicate = commesse.filter(c => selectedIds.includes(c.id));
+        const { nextMonthISO, nextMonthDataApertura } = getNextMonthInfo();
+        if (!confirm(`Trovate ${commesseToDuplicate.length} commesse selezionate.\nVuoi duplicarle integralmente nel mese ${nextMonthISO} MANTENENDO note, stato corrente e percentuale di avanzamento?`)) {
+            return;
+        }
+        let timestampCounter = Date.now();
+        commesseToDuplicate.forEach(c => {
+            timestampCounter++;
+            const duplicatedCommesa = {
+                ...JSON.parse(JSON.stringify(c)),
+                id: timestampCounter,
+                dataApertura: nextMonthDataApertura
+            };
+            commesse.push(duplicatedCommesa);
+        });
+        saveToLocalStorage();
+        populateAnnoDropdown();
+        document.getElementById('filterMese').value = nextMonthISO;
+        renderTable();
+        alert(`Le ${commesseToDuplicate.length} commesse selezionate sono state duplicate con successo nel mese ${nextMonthISO} (con note e stato inalterati)!`);
+    }
+
     function duplicateNonCompletedToNextMonth() {
         const selectedMonth = document.getElementById('filterMese').value || new Date().toISOString().slice(0, 7);
         const activeCommesse = commesse.filter(c => {
@@ -1325,10 +1314,8 @@
         renderTable();
         alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
     }
-
     function openNewCommessaModal() {
         const nowDT = getCurrentDateTime();
-
         document.getElementById('modalCommessaId').value = '';
         document.getElementById('modalCodice').value = '';
         document.getElementById('modalCliente').value = '';
@@ -1336,27 +1323,20 @@
         document.getElementById('modalDataChiusura').value = '';
         document.getElementById('modalStato').value = 'Da iniziare';
         document.getElementById('modalPercentuale').value = 0;
-
         document.getElementById('modalEditTitle').innerText = '➕ Nuova Commessa';
         document.getElementById('btnSaveModal').innerText = 'Crea Commessa';
         document.getElementById('btnPrintModal').style.display = 'none';
-
         document.getElementById('modalNotesHistorySection').style.display = 'none';
         document.getElementById('modalAddNoteTitle').innerText = '➕ Note Iniziali (Opzionale)';
-
         document.getElementById('modalDataNota').value = nowDT.currentDate;
         document.getElementById('modalOraNota').value = nowDT.currentTime;
         document.getElementById('modalNuovaNota').value = '';
-
         document.getElementById('editCommessaModal').classList.add('active');
     }
-
     function openEditModal(id) {
         const c = commesse.find(item => item.id === id);
         if (!c) return;
-
         const nowDT = getCurrentDateTime();
-
         document.getElementById('modalCommessaId').value = c.id;
         document.getElementById('modalCodice').value = c.codice;
         document.getElementById('modalCliente').value = c.cliente || '';
@@ -1364,35 +1344,27 @@
         document.getElementById('modalDataChiusura').value = c.dataChiusura || '';
         document.getElementById('modalStato').value = c.stato;
         document.getElementById('modalPercentuale').value = c.percentuale;
-
         document.getElementById('modalEditTitle').innerText = `Gestione Commessa: ${c.codice}`;
         document.getElementById('btnSaveModal').innerText = 'Salva Modifiche';
         document.getElementById('btnPrintModal').style.display = 'inline-block';
-
         document.getElementById('modalNotesHistorySection').style.display = 'block';
         document.getElementById('modalAddNoteTitle').innerText = '➕ Aggiungi Nuova Nota';
-
         document.getElementById('modalDataNota').value = nowDT.currentDate;
         document.getElementById('modalOraNota').value = nowDT.currentTime;
         document.getElementById('modalNuovaNota').value = '';
-
         renderModalNotesHistory(c);
-
         document.getElementById('editCommessaModal').classList.add('active');
     }
-
     function printCommessaDirect(id) {
         openEditModal(id);
         setTimeout(() => {
             window.print();
         }, 150);
     }
-
     function renderModalNotesHistory(commessa) {
         const container = document.getElementById('modalNotesHistory');
         container.innerHTML = '';
         const sortedNotes = getSortedNotes(commessa.noteCronologia);
-
         if (sortedNotes.length === 0) {
             container.innerHTML = '<p style="color: var(--subtext-color); font-size: 0.85rem;">Nessuna nota presente per questa commessa.</p>';
         } else {
@@ -1410,11 +1382,9 @@
             });
         }
     }
-
     function closeEditModal() {
         document.getElementById('editCommessaModal').classList.remove('active');
     }
-
     function deleteNoteFromModal(commessaId, noteId) {
         if (!confirm('Eliminare questa nota?')) return;
         const c = commesse.find(item => item.id === commessaId);
@@ -1424,28 +1394,23 @@
         renderModalNotesHistory(c);
         renderTable();
     }
-
     function saveCommessaFromModal(e) {
         e.preventDefault();
         const idVal = document.getElementById('modalCommessaId').value;
         const id = idVal ? parseInt(idVal) : null;
-
         const testoNota = document.getElementById('modalNuovaNota').value.trim();
         const dataNota = document.getElementById('modalDataNota').value;
         const oraNota = document.getElementById('modalOraNota').value;
         const nowDT = getCurrentDateTime();
-
         if (id) {
             const c = commesse.find(item => item.id === id);
             if (!c) return;
-
             c.codice = document.getElementById('modalCodice').value;
             c.cliente = document.getElementById('modalCliente').value;
             c.dataApertura = document.getElementById('modalDataApertura').value;
             c.dataChiusura = document.getElementById('modalDataChiusura').value;
             c.stato = document.getElementById('modalStato').value;
             c.percentuale = parseInt(document.getElementById('modalPercentuale').value) || 0;
-
             if (testoNota !== '') {
                 if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
                 c.noteCronologia.push({
@@ -1465,7 +1430,6 @@
                     testo: testoNota
                 });
             }
-
             const newCommessa = {
                 id: Date.now(),
                 codice: document.getElementById('modalCodice').value,
@@ -1476,20 +1440,16 @@
                 percentuale: parseInt(document.getElementById('modalPercentuale').value) || 0,
                 noteCronologia: currentNotes
             };
-
             commesse.push(newCommessa);
         }
-
         saveToLocalStorage();
         populateAnnoDropdown();
         closeEditModal();
         renderTable();
     }
-
     function editCommessa(id) {
         openEditModal(id);
     }
-
     function deleteCommessa(id) {
         if (confirm('Sei sicuro di voler eliminare questa commessa?')) {
             commesse = commesse.filter(c => c.id !== id);
@@ -1498,7 +1458,6 @@
             renderTable();
         }
     }
-
     function resetFilter() {
         document.getElementById('filterAnno').value = '';
         document.getElementById('filterMese').value = currentMonth;
@@ -1507,18 +1466,15 @@
         
         currentSortColumn = 'dataApertura';
         currentSortOrder = 'desc';
-
         const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]');
         checkboxes.forEach(cb => cb.checked = false);
         onStatoFilterChange();
     }
-
     function updateStatistics(filteredCommesse) {
         let daIniziare = 0;
         let inCorso = 0;
         let inAttesa = 0;
         let completate = 0;
-
         filteredCommesse.forEach(c => {
             switch(c.stato) {
                 case 'Da iniziare': daIniziare++; break;
@@ -1527,14 +1483,12 @@
                 case 'Completata': completate++; break;
             }
         });
-
         document.getElementById('statDaIniziare').innerText = daIniziare;
         document.getElementById('statInCorso').innerText = inCorso;
         document.getElementById('statInAttesa').innerText = inAttesa;
         document.getElementById('statCompletate').innerText = completate;
         document.getElementById('statTotali').innerText = filteredCommesse.length;
     }
-
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
@@ -1543,13 +1497,11 @@
         const selStati = getSelectedStati();
         const selCliente = document.getElementById('filterCliente').value.toLowerCase().trim();
         const selKeyword = document.getElementById('filterKeyword').value.toLowerCase().trim();
-
         let filtered = commesse.filter(c => {
             const matchesAnno = !selAnno || (c.dataApertura && c.dataApertura.startsWith(selAnno));
             const matchesMonth = !selMonth || (c.dataApertura && c.dataApertura.startsWith(selMonth));
             const matchesStato = selStati.length === 0 || selStati.includes(c.stato);
             const matchesCliente = !selCliente || (c.cliente && c.cliente.toLowerCase().includes(selCliente));
-
             let matchesKeyword = true;
             if (selKeyword) {
                 const noteText = (c.noteCronologia || []).map(n => n.testo).join(' ').toLowerCase();
@@ -1563,17 +1515,13 @@
                 ].join(' ').toLowerCase();
                 matchesKeyword = allText.includes(selKeyword);
             }
-
             return matchesAnno && matchesMonth && matchesStato && matchesCliente && matchesKeyword;
         });
-
         updateStatistics(filtered);
-
         const iconApertura = document.getElementById('sort-icon-dataApertura');
         const iconStato = document.getElementById('sort-icon-stato');
         if (iconApertura) iconApertura.innerText = currentSortColumn === 'dataApertura' ? (currentSortOrder === 'asc' ? '▲' : '▼') : '⇅';
         if (iconStato) iconStato.innerText = currentSortColumn === 'stato' ? (currentSortOrder === 'asc' ? '▲' : '▼') : '⇅';
-
         if (currentSortColumn) {
             filtered.sort((a, b) => {
                 let valA, valB;
@@ -1584,13 +1532,11 @@
                     valA = statoPriority[a.stato] || 99;
                     valB = statoPriority[b.stato] || 99;
                 }
-
                 if (valA < valB) return currentSortOrder === 'asc' ? -1 : 1;
                 if (valA > valB) return currentSortOrder === 'asc' ? 1 : -1;
                 return 0;
             });
         }
-
         const totalFiltered = filtered.length;
         filtered.forEach((c, index) => {
             const isLastRows = (totalFiltered > 3) && (index >= totalFiltered - 2);
@@ -1599,12 +1545,10 @@
             tr.ondblclick = function() {
                 openEditModal(c.id);
             };
-
             let badgeClass = 'st-da-iniziare';
             if (c.stato === 'In corso') badgeClass = 'st-in-corso';
             if (c.stato === 'In attesa') badgeClass = 'st-in-attesa';
             if (c.stato === 'Completata') badgeClass = 'st-completata';
-
             const sortedNotes = getSortedNotes(c.noteCronologia);
             let latestNoteHTML = '<span style="color: #cbd5e1;">-</span>';
             if (sortedNotes.length > 0) {
@@ -1616,7 +1560,6 @@
                 `;
             }
             const notesCount = sortedNotes.length;
-
             tr.innerHTML = `
                 <td style="text-align: center;" onclick="event.stopPropagation()">
                     <input type="checkbox" class="row-checkbox commessa-checkbox" value="${c.id}">
@@ -1655,11 +1598,9 @@
             `;
             tbody.appendChild(tr);
         });
-
         const masterCb = document.getElementById('selectAllCheckbox');
         if (masterCb) masterCb.checked = false;
     }
-
     function exportData(isAuto = false) {
         saveToLocalStorage();
         const timestamp = new Date().toISOString().slice(0,19).replace(/[:T]/g, "_");
@@ -1676,14 +1617,12 @@
             showToast();
         }
     }
-
     function showToast() {
         const toast = document.getElementById('toast');
         toast.classList.remove('show');
         void toast.offsetWidth;
         toast.classList.add('show');
     }
-
     function importData(event) {
         const fileReader = new FileReader();
         fileReader.onload = function(e) {
@@ -1706,7 +1645,6 @@
             fileReader.readAsText(event.target.files[0]);
         }
     }
-
     function exportToCSV() {
         let csvContent = "data:text/csv;charset=utf-8,";
         csvContent += "Codice;Cliente;Data Apertura;Data Chiusura;Stato;Avanzamento %;Ultima Nota\n";
@@ -1732,11 +1670,9 @@
         link.click();
         link.remove();
     }
-
     let backupEnabled = true;
     let backupIntervalMinutes = 2;
     let secondsLeft = backupIntervalMinutes * 60;
-
     function updateTimerDisplay() {
         const timerElem = document.getElementById('backupTimer');
         const badgeElem = document.getElementById('backupBadge');
@@ -1753,7 +1689,6 @@
             timerElem.innerText = formattedTime;
         }
     }
-
     function toggleAutoBackup() {
         const checkbox = document.getElementById('toggleBackup');
         backupEnabled = checkbox.checked;
@@ -1762,14 +1697,12 @@
         }
         updateTimerDisplay();
     }
-
     function changeBackupInterval() {
         const select = document.getElementById('backupIntervalSelect');
         backupIntervalMinutes = parseInt(select.value) || 2;
         secondsLeft = backupIntervalMinutes * 60;
         updateTimerDisplay();
     }
-
     setInterval(() => {
         if (!backupEnabled) return;
         secondsLeft--;
@@ -1779,7 +1712,6 @@
         }
         updateTimerDisplay();
     }, 1000);
-
     updateTimerDisplay();
     renderTable();
 </script>
