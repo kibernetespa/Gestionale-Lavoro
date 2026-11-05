@@ -61,6 +61,28 @@
             font-size: 1.8rem;
             color: var(--heading-color);
         }
+        .info-badges-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .info-badge {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-badge span.valore {
+            color: var(--primary);
+            font-weight: 700;
+        }
         .backup-status-badge {
             background-color: #d1fae5;
             color: #065f46;
@@ -804,6 +826,16 @@
             <h1>Gestionale Commesse Mensile</h1>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <!-- Badge Informativi Ultima Modifica e Ultimo Backup -->
+            <div class="info-badges-container">
+                <div class="info-badge" title="Data, orario, tipo azione e commessa dell'ultima modifica">
+                    ✏️ Ultima Modifica: <span id="displayUltimaModifica" class="valore">Nessuna</span>
+                </div>
+                <div class="info-badge" title="Data e orario dell'ultimo backup effettuato">
+                    💾 Ultimo Backup: <span id="displayUltimoBackup" class="valore">Nessuno</span>
+                </div>
+            </div>
+
             <button type="button" class="btn-success-new" onclick="openNewCommessaModal()">➕ NUOVA COMMESSA</button>
             <button type="button" class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">🌙 Modalità Scura</button>
             <div id="backupBadge" class="backup-status-badge">
@@ -1024,6 +1056,14 @@
         const currentTime = now.toTimeString().slice(0, 5);
         return { currentDate, currentTime };
     }
+
+    function getFormattedFullDateTime() {
+        const now = new Date();
+        const dateStr = formatDate(now.toISOString().slice(0, 10));
+        const timeStr = now.toTimeString().slice(0, 5);
+        return `${dateStr} ${timeStr}`;
+    }
+
     function autoUpdateNoteDateTime(dataInputId, oraInputId) {
         const { currentDate, currentTime } = getCurrentDateTime();
         const dataElem = document.getElementById(dataInputId);
@@ -1031,11 +1071,13 @@
         if (dataElem && !dataElem.value) dataElem.value = currentDate;
         if (oraElem && !oraElem.value) oraElem.value = currentTime;
     }
+
     function initTheme() {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeBtnText(savedTheme);
     }
+
     function toggleTheme() {
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -1043,14 +1085,44 @@
         localStorage.setItem('theme', newTheme);
         updateThemeBtnText(newTheme);
     }
+
     function updateThemeBtnText(theme) {
         const btn = document.getElementById('themeToggleBtn');
         if (btn) {
             btn.innerText = theme === 'dark' ? '☀️ Modalità Chiara' : '🌙 Modalità Scura';
         }
     }
+
     initTheme();
     let commesse = JSON.parse(localStorage.getItem('commesse_db')) || [];
+    let ultimaModificaInfo = localStorage.getItem('ultima_modifica_info_db') || 'Nessuna';
+    let ultimoBackup = localStorage.getItem('ultimo_backup_db') || 'Nessuno';
+
+    function updateHeaderInfoDisplay() {
+        const elemModifica = document.getElementById('displayUltimaModifica');
+        const elemBackup = document.getElementById('displayUltimoBackup');
+        if (elemModifica) elemModifica.innerText = ultimaModificaInfo;
+        if (elemBackup) elemBackup.innerText = ultimoBackup;
+    }
+
+    function setUltimaModifica(tipoAzione, codiceCommessa) {
+        const dtStr = getFormattedFullDateTime();
+        if (tipoAzione && codiceCommessa) {
+            ultimaModificaInfo = `${dtStr} (${tipoAzione} - ${codiceCommessa})`;
+        } else if (tipoAzione) {
+            ultimaModificaInfo = `${dtStr} (${tipoAzione})`;
+        } else {
+            ultimaModificaInfo = dtStr;
+        }
+        localStorage.setItem('ultima_modifica_info_db', ultimaModificaInfo);
+        updateHeaderInfoDisplay();
+    }
+
+    function setUltimoBackup() {
+        ultimoBackup = getFormattedFullDateTime();
+        localStorage.setItem('ultimo_backup_db', ultimoBackup);
+        updateHeaderInfoDisplay();
+    }
     
     let currentSortColumn = 'dataApertura';
     let currentSortOrder = 'desc';
@@ -1060,6 +1132,7 @@
         "In attesa": 3,
         "Completata": 4
     };
+
     function sortTable(column) {
         if (currentSortColumn === column) {
             currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
@@ -1069,15 +1142,21 @@
         }
         renderTable();
     }
-    function saveToLocalStorage() {
+
+    function saveToLocalStorage(tipoAzione = null, codiceCommessa = null) {
         localStorage.setItem('commesse_db', JSON.stringify(commesse));
+        if (tipoAzione) {
+            setUltimaModifica(tipoAzione, codiceCommessa);
+        }
     }
+
     function formatDate(dStr) {
         if (!dStr) return '-';
         const parts = dStr.split('-');
         if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
         return dStr;
     }
+
     function escapeHtml(str) {
         if (!str) return '';
         return String(str)
@@ -1087,6 +1166,7 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     }
+
     function populateAnnoDropdown() {
         const selectAnno = document.getElementById('filterAnno');
         const currentValue = selectAnno.value;
@@ -1108,6 +1188,7 @@
         });
         selectAnno.value = currentValue;
     }
+
     commesse.forEach(c => {
         if (!Array.isArray(c.noteCronologia)) {
             c.noteCronologia = [];
@@ -1123,14 +1204,18 @@
             }
         }
     });
+
     const initDT = getCurrentDateTime();
     const currentMonth = initDT.currentDate.slice(0, 7);
     document.getElementById('filterMese').value = currentMonth;
     populateAnnoDropdown();
+    updateHeaderInfoDisplay();
+
     function toggleDropdown(e) {
         e.stopPropagation();
         document.getElementById('checkboxesDropdown').classList.toggle('show');
     }
+
     function toggleKebabMenu(e, id, isLastRows) {
         e.stopPropagation();
         document.querySelectorAll('.dropdown-menu').forEach(m => {
@@ -1146,6 +1231,7 @@
             targetMenu.classList.toggle('show');
         }
     }
+
     window.onclick = function(e) {
         if (!e.target.closest('.multiselect-container')) {
             const dropdown = document.getElementById('checkboxesDropdown');
@@ -1155,10 +1241,12 @@
             document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
         }
     };
+
     function getSelectedStati() {
         const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]:checked');
         return Array.from(checkboxes).map(cb => cb.value);
     }
+
     function onStatoFilterChange() {
         const selected = getSelectedStati();
         const label = document.getElementById('multiselectLabel');
@@ -1169,6 +1257,7 @@
         updateActiveStatCard(selected);
         renderTable();
     }
+
     function filterByStatStato(targetStato) {
         const checkboxes = document.querySelectorAll('#checkboxesDropdown input[type="checkbox"]');
         
@@ -1181,6 +1270,7 @@
         });
         onStatoFilterChange();
     }
+
     function updateActiveStatCard(selectedStati) {
         document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
         if (selectedStati.length === 0) {
@@ -1193,6 +1283,7 @@
             else if (st === 'Completata') document.getElementById('cardCompletata').classList.add('active');
         }
     }
+
     function getSortedNotes(noteArray) {
         if (!noteArray || noteArray.length === 0) return [];
         return [...noteArray].sort((a, b) => {
@@ -1201,10 +1292,12 @@
             return dtB.localeCompare(dtA);
         });
     }
+
     function toggleSelectAll(masterCheckbox) {
         const checkboxes = document.querySelectorAll('.commessa-checkbox');
         checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
     }
+
     function getNextMonthInfo() {
         const selectedMonth = document.getElementById('filterMese').value || new Date().toISOString().slice(0, 7);
         const [yearStr, monthStr] = selectedMonth.split('-');
@@ -1219,6 +1312,7 @@
         const nextMonthDataApertura = `${nextMonthISO}-01`;
         return { nextMonthISO, nextMonthDataApertura };
     }
+
     function duplicateSelectedResetToNextMonth() {
         const selectedCheckboxes = document.querySelectorAll('.commessa-checkbox:checked');
         if (selectedCheckboxes.length === 0) {
@@ -1246,14 +1340,13 @@
             };
             commesse.push(duplicatedCommesa);
         });
-        saveToLocalStorage();
+        saveToLocalStorage("Duplicazione commesse", `${commesseToDuplicate.length} elementi`);
         populateAnnoDropdown();
         document.getElementById('filterMese').value = nextMonthISO;
         renderTable();
         alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
     }
 
-    /* NUOVA FUNZIONE: DUPLICA SELEZIONATE IN CORRENTI CON NOTE */
     function duplicateSelectedWithNotesToNextMonth() {
         const selectedCheckboxes = document.querySelectorAll('.commessa-checkbox:checked');
         if (selectedCheckboxes.length === 0) {
@@ -1276,7 +1369,7 @@
             };
             commesse.push(duplicatedCommesa);
         });
-        saveToLocalStorage();
+        saveToLocalStorage("Duplicazione con note", `${commesseToDuplicate.length} elementi`);
         populateAnnoDropdown();
         document.getElementById('filterMese').value = nextMonthISO;
         renderTable();
@@ -1308,12 +1401,13 @@
             };
             commesse.push(duplicatedCommesa);
         });
-        saveToLocalStorage();
+        saveToLocalStorage("Duplicazione incomplete", `${activeCommesse.length} elementi`);
         populateAnnoDropdown();
         document.getElementById('filterMese').value = nextMonthISO;
         renderTable();
         alert(`Commesse duplicate con successo nel mese ${nextMonthISO}!`);
     }
+
     function openNewCommessaModal() {
         const nowDT = getCurrentDateTime();
         document.getElementById('modalCommessaId').value = '';
@@ -1333,6 +1427,7 @@
         document.getElementById('modalNuovaNota').value = '';
         document.getElementById('editCommessaModal').classList.add('active');
     }
+
     function openEditModal(id) {
         const c = commesse.find(item => item.id === id);
         if (!c) return;
@@ -1355,12 +1450,14 @@
         renderModalNotesHistory(c);
         document.getElementById('editCommessaModal').classList.add('active');
     }
+
     function printCommessaDirect(id) {
         openEditModal(id);
         setTimeout(() => {
             window.print();
         }, 150);
     }
+
     function renderModalNotesHistory(commessa) {
         const container = document.getElementById('modalNotesHistory');
         container.innerHTML = '';
@@ -1382,35 +1479,43 @@
             });
         }
     }
+
     function closeEditModal() {
         document.getElementById('editCommessaModal').classList.remove('active');
     }
+
     function deleteNoteFromModal(commessaId, noteId) {
         if (!confirm('Eliminare questa nota?')) return;
         const c = commesse.find(item => item.id === commessaId);
         if (!c) return;
         c.noteCronologia = c.noteCronologia.filter(n => n.id !== noteId);
-        saveToLocalStorage();
+        saveToLocalStorage('Eliminazione nota', c.codice);
         renderModalNotesHistory(c);
         renderTable();
     }
+
     function saveCommessaFromModal(e) {
         e.preventDefault();
         const idVal = document.getElementById('modalCommessaId').value;
         const id = idVal ? parseInt(idVal) : null;
+        const codiceInput = document.getElementById('modalCodice').value;
         const testoNota = document.getElementById('modalNuovaNota').value.trim();
         const dataNota = document.getElementById('modalDataNota').value;
         const oraNota = document.getElementById('modalOraNota').value;
         const nowDT = getCurrentDateTime();
+        
+        let tipoAzione = '';
+
         if (id) {
             const c = commesse.find(item => item.id === id);
             if (!c) return;
-            c.codice = document.getElementById('modalCodice').value;
+            c.codice = codiceInput;
             c.cliente = document.getElementById('modalCliente').value;
             c.dataApertura = document.getElementById('modalDataApertura').value;
             c.dataChiusura = document.getElementById('modalDataChiusura').value;
             c.stato = document.getElementById('modalStato').value;
             c.percentuale = parseInt(document.getElementById('modalPercentuale').value) || 0;
+            
             if (testoNota !== '') {
                 if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
                 c.noteCronologia.push({
@@ -1419,6 +1524,9 @@
                     ora: oraNota || nowDT.currentTime,
                     testo: testoNota
                 });
+                tipoAzione = 'Nuova nota';
+            } else {
+                tipoAzione = 'Modifica commessa';
             }
         } else {
             const currentNotes = [];
@@ -1432,7 +1540,7 @@
             }
             const newCommessa = {
                 id: Date.now(),
-                codice: document.getElementById('modalCodice').value,
+                codice: codiceInput,
                 cliente: document.getElementById('modalCliente').value,
                 dataApertura: document.getElementById('modalDataApertura').value,
                 dataChiusura: document.getElementById('modalDataChiusura').value,
@@ -1441,23 +1549,31 @@
                 noteCronologia: currentNotes
             };
             commesse.push(newCommessa);
+            tipoAzione = 'Nuova commessa';
         }
-        saveToLocalStorage();
+        
+        saveToLocalStorage(tipoAzione, codiceInput);
         populateAnnoDropdown();
         closeEditModal();
         renderTable();
     }
+
     function editCommessa(id) {
         openEditModal(id);
     }
+
     function deleteCommessa(id) {
+        const c = commesse.find(item => item.id === id);
+        if (!c) return;
         if (confirm('Sei sicuro di voler eliminare questa commessa?')) {
-            commesse = commesse.filter(c => c.id !== id);
-            saveToLocalStorage();
+            const cod = c.codice;
+            commesse = commesse.filter(item => item.id !== id);
+            saveToLocalStorage('Eliminazione commessa', cod);
             populateAnnoDropdown();
             renderTable();
         }
     }
+
     function resetFilter() {
         document.getElementById('filterAnno').value = '';
         document.getElementById('filterMese').value = currentMonth;
@@ -1470,6 +1586,7 @@
         checkboxes.forEach(cb => cb.checked = false);
         onStatoFilterChange();
     }
+
     function updateStatistics(filteredCommesse) {
         let daIniziare = 0;
         let inCorso = 0;
@@ -1489,6 +1606,7 @@
         document.getElementById('statCompletate').innerText = completate;
         document.getElementById('statTotali').innerText = filteredCommesse.length;
     }
+
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
@@ -1601,6 +1719,7 @@
         const masterCb = document.getElementById('selectAllCheckbox');
         if (masterCb) masterCb.checked = false;
     }
+
     function exportData(isAuto = false) {
         saveToLocalStorage();
         const timestamp = new Date().toISOString().slice(0,19).replace(/[:T]/g, "_");
@@ -1613,16 +1732,20 @@
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
+        
+        setUltimoBackup();
         if (isAuto) {
             showToast();
         }
     }
+
     function showToast() {
         const toast = document.getElementById('toast');
         toast.classList.remove('show');
         void toast.offsetWidth;
         toast.classList.add('show');
     }
+
     function importData(event) {
         const fileReader = new FileReader();
         fileReader.onload = function(e) {
@@ -1630,7 +1753,7 @@
                 const imported = JSON.parse(e.target.result);
                 if (Array.isArray(imported)) {
                     commesse = imported;
-                    saveToLocalStorage();
+                    saveToLocalStorage('Importazione JSON', `${imported.length} commesse`);
                     populateAnnoDropdown();
                     renderTable();
                     alert('Dati importati con successo!');
@@ -1645,6 +1768,7 @@
             fileReader.readAsText(event.target.files[0]);
         }
     }
+
     function exportToCSV() {
         let csvContent = "data:text/csv;charset=utf-8,";
         csvContent += "Codice;Cliente;Data Apertura;Data Chiusura;Stato;Avanzamento %;Ultima Nota\n";
@@ -1670,9 +1794,11 @@
         link.click();
         link.remove();
     }
+
     let backupEnabled = true;
     let backupIntervalMinutes = 2;
     let secondsLeft = backupIntervalMinutes * 60;
+
     function updateTimerDisplay() {
         const timerElem = document.getElementById('backupTimer');
         const badgeElem = document.getElementById('backupBadge');
@@ -1689,6 +1815,7 @@
             timerElem.innerText = formattedTime;
         }
     }
+
     function toggleAutoBackup() {
         const checkbox = document.getElementById('toggleBackup');
         backupEnabled = checkbox.checked;
@@ -1697,12 +1824,14 @@
         }
         updateTimerDisplay();
     }
+
     function changeBackupInterval() {
         const select = document.getElementById('backupIntervalSelect');
         backupIntervalMinutes = parseInt(select.value) || 2;
         secondsLeft = backupIntervalMinutes * 60;
         updateTimerDisplay();
     }
+
     setInterval(() => {
         if (!backupEnabled) return;
         secondsLeft--;
@@ -1712,6 +1841,7 @@
         }
         updateTimerDisplay();
     }, 1000);
+
     updateTimerDisplay();
     renderTable();
 </script>
