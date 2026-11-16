@@ -735,14 +735,22 @@
             font-weight: bold;
             color: var(--primary);
         }
-        .btn-delete-note {
+        .note-actions-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .btn-action-note {
             background: none;
             border: none;
-            color: var(--subtext-color);
             cursor: pointer;
             font-size: 0.75rem;
+            color: var(--subtext-color);
         }
-        .btn-delete-note:hover {
+        .btn-action-note:hover {
+            color: var(--primary);
+        }
+        .btn-action-note.delete:hover {
             color: var(--danger);
         }
         .note-text {
@@ -792,7 +800,7 @@
             }
             .close-modal-btn, 
             .modal-footer, 
-            .btn-delete-note,
+            .btn-action-note,
             .add-note-section {
                 display: none !important;
             }
@@ -826,7 +834,6 @@
             <h1>Gestionale Commesse Mensile</h1>
         </div>
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <!-- Badge Informativi Ultima Modifica e Ultimo Backup -->
             <div class="info-badges-container">
                 <div class="info-badge" title="Data, orario, tipo azione e commessa dell'ultima modifica">
                     ✏️ Ultima Modifica: <span id="displayUltimaModifica" class="valore">Nessuna</span>
@@ -1019,7 +1026,11 @@
                     </div>
                 </div>
                 <div class="add-note-section" style="background: var(--section-bg); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
-                    <label id="modalAddNoteTitle" style="color: var(--heading-color); margin-bottom: 8px; display: block;">➕ Aggiungi Nuova Nota</label>
+                    <input type="hidden" id="editingNoteId">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label id="modalAddNoteTitle" style="color: var(--heading-color); display: block;">➕ Aggiungi Nuova Nota</label>
+                        <button type="button" id="btnCancelEditNote" onclick="cancelEditNoteMode()" style="display:none; background:none; border:none; color:var(--danger); font-size:0.8rem; cursor:pointer; font-weight:600;">Annulla Modifica Nota</button>
+                    </div>
                     <div class="form-grid" style="margin-bottom: 0;">
                         <div class="form-group">
                             <label for="modalDataNota">Data Nota</label>
@@ -1425,6 +1436,7 @@
         document.getElementById('modalDataNota').value = nowDT.currentDate;
         document.getElementById('modalOraNota').value = nowDT.currentTime;
         document.getElementById('modalNuovaNota').value = '';
+        cancelEditNoteMode();
         document.getElementById('editCommessaModal').classList.add('active');
     }
 
@@ -1447,6 +1459,7 @@
         document.getElementById('modalDataNota').value = nowDT.currentDate;
         document.getElementById('modalOraNota').value = nowDT.currentTime;
         document.getElementById('modalNuovaNota').value = '';
+        cancelEditNoteMode();
         renderModalNotesHistory(c);
         document.getElementById('editCommessaModal').classList.add('active');
     }
@@ -1468,16 +1481,53 @@
             sortedNotes.forEach(n => {
                 const item = document.createElement('div');
                 item.className = 'note-item';
+                let modifiedInfoHtml = '';
+                if (n.modificataIl) {
+                    modifiedInfoHtml = `<span style="font-size: 0.7rem; color: var(--subtext-color); font-style: italic; margin-left: 6px;" title="Ultima modifica: ${n.modificataIl}">(Modificato)</span>`;
+                }
                 item.innerHTML = `
                     <div class="note-header">
-                        <span class="note-date-tag">📅 ${formatDate(n.data)} - 🕒 ${n.ora || '12:00'}</span>
-                        <button type="button" class="btn-delete-note" onclick="deleteNoteFromModal(${commessa.id}, ${n.id})">Elimina</button>
+                        <span class="note-date-tag">📅 ${formatDate(n.data)} - 🕒 ${n.ora || '12:00'}${modifiedInfoHtml}</span>
+                        <div class="note-actions-group">
+                            <button type="button" class="btn-action-note" onclick="startEditNote(${commessa.id}, ${n.id})">Modifica</button>
+                            <button type="button" class="btn-action-note delete" onclick="deleteNoteFromModal(${commessa.id}, ${n.id})">Elimina</button>
+                        </div>
                     </div>
                     <div class="note-text">${escapeHtml(n.testo)}</div>
                 `;
                 container.appendChild(item);
             });
         }
+    }
+
+    function startEditNote(commessaId, noteId) {
+        const c = commesse.find(item => item.id === commessaId);
+        if (!c) return;
+        const n = c.noteCronologia.find(item => item.id === noteId);
+        if (!n) return;
+
+        document.getElementById('editingNoteId').value = n.id;
+        document.getElementById('modalDataNota').value = n.data || '';
+        document.getElementById('modalOraNota').value = n.ora || '';
+        document.getElementById('modalNuovaNota').value = n.testo || '';
+        document.getElementById('modalAddNoteTitle').innerText = '✏️ Modifica Nota Esistente';
+        document.getElementById('btnCancelEditNote').style.display = 'inline-block';
+        
+        const noteSection = document.getElementById('modalNuovaNota');
+        if (noteSection) {
+            noteSection.scrollIntoView({ behavior: 'smooth' });
+            noteSection.focus();
+        }
+    }
+
+    function cancelEditNoteMode() {
+        document.getElementById('editingNoteId').value = '';
+        document.getElementById('modalAddNoteTitle').innerText = '➕ Aggiungi Nuova Nota';
+        document.getElementById('btnCancelEditNote').style.display = 'none';
+        const nowDT = getCurrentDateTime();
+        document.getElementById('modalDataNota').value = nowDT.currentDate;
+        document.getElementById('modalOraNota').value = nowDT.currentTime;
+        document.getElementById('modalNuovaNota').value = '';
     }
 
     function closeEditModal() {
@@ -1502,7 +1552,9 @@
         const testoNota = document.getElementById('modalNuovaNota').value.trim();
         const dataNota = document.getElementById('modalDataNota').value;
         const oraNota = document.getElementById('modalOraNota').value;
+        const editingNoteIdVal = document.getElementById('editingNoteId').value;
         const nowDT = getCurrentDateTime();
+        const fullDateTimeStr = getFormattedFullDateTime();
         
         let tipoAzione = '';
 
@@ -1516,7 +1568,20 @@
             c.stato = document.getElementById('modalStato').value;
             c.percentuale = parseInt(document.getElementById('modalPercentuale').value) || 0;
             
-            if (testoNota !== '') {
+            if (editingNoteIdVal) {
+                // MODIFICA DI UNA NOTA ESISTENTE
+                const noteId = parseInt(editingNoteIdVal);
+                const existingNote = c.noteCronologia.find(n => n.id === noteId);
+                if (existingNote) {
+                    existingNote.data = dataNota || existingNote.data;
+                    existingNote.ora = oraNota || existingNote.ora;
+                    existingNote.testo = testoNota;
+                    existingNote.modificataIl = fullDateTimeStr;
+                    tipoAzione = 'Modifica nota';
+                }
+                cancelEditNoteMode();
+            } else if (testoNota !== '') {
+                // AGGIUNGI NUOVA NOTA
                 if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
                 c.noteCronologia.push({
                     id: Date.now(),
