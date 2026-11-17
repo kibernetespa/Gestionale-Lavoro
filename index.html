@@ -51,11 +51,22 @@
         }
         header {
             display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .header-top-row {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 15px;
+        }
+        .header-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         h1 {
             font-size: 1.8rem;
@@ -830,10 +841,10 @@
 <body>
 <div class="container">
     <header>
-        <div>
-            <h1>Gestionale Commesse Mensile</h1>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div class="header-top-row">
+            <div>
+                <h1>Gestionale Commesse Mensile</h1>
+            </div>
             <div class="info-badges-container">
                 <div class="info-badge" title="Data, orario, tipo azione e commessa dell'ultima modifica">
                     ✏️ Ultima Modifica: <span id="displayUltimaModifica" class="valore">Nessuna</span>
@@ -842,34 +853,39 @@
                     💾 Ultimo Backup: <span id="displayUltimoBackup" class="valore">Nessuno</span>
                 </div>
             </div>
+        </div>
 
+        <div class="header-actions-row">
             <button type="button" class="btn-success-new" onclick="openNewCommessaModal()">➕ NUOVA COMMESSA</button>
             <button type="button" class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()">🌙 Modalità Scura</button>
-            <div id="backupBadge" class="backup-status-badge">
-                <span class="dot"></span> Prossimo backup: <span id="backupTimer">02:00</span>
-            </div>
-            <div class="backup-controls">
-                <span>Auto Backup:</span>
-                <label class="switch" title="Attiva/Disattiva backup automatico">
-                    <input type="checkbox" id="toggleBackup" checked onchange="toggleAutoBackup()">
-                    <span class="slider"></span>
-                </label>
-                <select id="backupIntervalSelect" onchange="changeBackupInterval()" title="Intervallo backup">
-                    <option value="1">1 min</option>
-                    <option value="2" selected>2 min</option>
-                    <option value="5">5 min</option>
-                    <option value="10">10 min</option>
-                    <option value="15">15 min</option>
-                    <option value="30">30 min</option>
-                    <option value="60">60 min</option>
-                </select>
-            </div>
             <button class="btn-duplicate-reset" onclick="duplicateSelectedResetToNextMonth()">1️⃣ Duplica Selezionate (Reset Note)</button>
             <button class="btn-duplicate-selected-notes" onclick="duplicateSelectedWithNotesToNextMonth()">2️⃣ Duplica Selezionate In Correnti (Con Note)</button>
             <button class="btn-duplicate-full" onclick="duplicateNonCompletedToNextMonth()">3️⃣ Duplica Tutte Incomplete (Con Note)</button>
-            <button class="btn-export" onclick="exportData()">💾 Backup JSON manuale</button>
-            <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Importa JSON</button>
-            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+            
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <div id="backupBadge" class="backup-status-badge">
+                    <span class="dot"></span> Prossimo backup: <span id="backupTimer">02:00</span>
+                </div>
+                <div class="backup-controls">
+                    <span>Auto Backup:</span>
+                    <label class="switch" title="Attiva/Disattiva backup automatico">
+                        <input type="checkbox" id="toggleBackup" checked onchange="toggleAutoBackup()">
+                        <span class="slider"></span>
+                    </label>
+                    <select id="backupIntervalSelect" onchange="changeBackupInterval()" title="Intervallo backup">
+                        <option value="1">1 min</option>
+                        <option value="2" selected>2 min</option>
+                        <option value="5">5 min</option>
+                        <option value="10">10 min</option>
+                        <option value="15">15 min</option>
+                        <option value="30">30 min</option>
+                        <option value="60">60 min</option>
+                    </select>
+                </div>
+                <button class="btn-export" onclick="exportData()">💾 Backup JSON manuale</button>
+                <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📂 Importa JSON</button>
+                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+            </div>
         </div>
     </header>
     
@@ -1569,7 +1585,6 @@
             c.percentuale = parseInt(document.getElementById('modalPercentuale').value) || 0;
             
             if (editingNoteIdVal) {
-                // MODIFICA DI UNA NOTA ESISTENTE
                 const noteId = parseInt(editingNoteIdVal);
                 const existingNote = c.noteCronologia.find(n => n.id === noteId);
                 if (existingNote) {
@@ -1581,7 +1596,6 @@
                 }
                 cancelEditNoteMode();
             } else if (testoNota !== '') {
-                // AGGIUNGI NUOVA NOTA
                 if (!Array.isArray(c.noteCronologia)) c.noteCronologia = [];
                 c.noteCronologia.push({
                     id: Date.now(),
